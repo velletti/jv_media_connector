@@ -17,13 +17,6 @@ namespace JVE\JvMediaConnector\Domain\Model;
  */
 class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 {
-    /**
-     * the folder whre images are stored. Computed by users uid
-     *
-     * @var string
-     * @validate NotEmpty
-     */
-    protected $userpath = '';
 
     /**
      * usecount
@@ -41,32 +34,14 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $feuser = null;
 
     /**
-     * sysfile
-     *
-     * @var \TYPO3\CMS\Core\Resource\File
+     * $sysfile
+     * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\FileReference>
      */
-    protected $sysfile = null;
+    protected $sysfile ;
 
-    /**
-     * Returns the userpath
-     *
-     * @return string $userpath
-     */
-    public function getUserpath()
-    {
-        return $this->userpath;
-    }
 
-    /**
-     * Sets the userpath
-     *
-     * @param string $userpath
-     * @return void
-     */
-    public function setUserpath($userpath)
-    {
-        $this->userpath = $userpath;
-    }
+
+
 
     /**
      * Returns the usecount
@@ -113,7 +88,17 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Returns the sysfile
      *
-     * @return \TYPO3\CMS\Core\Resource\File $sysfile
+     * @return
+     */
+    public function setSysfile(\TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile)
+    {
+        $this->sysfile = $sysfile ;
+    }
+
+    /**
+     * Returns the sysfile
+     *
+     * @return \TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile
      */
     public function getSysfile()
     {
@@ -123,11 +108,11 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Sets the sysfile
      *
-     * @param \TYPO3\CMS\Core\Resource\File $sysfile
+     * @param \TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile
      * @return void
      */
-    public function setSysfile(\TYPO3\CMS\Core\Resource\File $sysfile)
+    public function addSysfile(\TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile)
     {
-        $this->sysfile = $sysfile;
+        $this->sysfile->attach($sysfile);
     }
 }

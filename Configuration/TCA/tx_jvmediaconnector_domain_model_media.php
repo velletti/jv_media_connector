@@ -2,7 +2,7 @@
 return [
     'ctrl' => [
         'title' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media',
-        'label' => 'userpath',
+        'label' => 'sysfile',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'cruser_id' => 'cruser_id',
@@ -16,14 +16,14 @@ return [
             'starttime' => 'starttime',
             'endtime' => 'endtime',
         ],
-        'searchFields' => 'userpath,usecount,feuser,sysfile',
+        'searchFields' => 'usecount,feuser,sysfile',
         'iconfile' => 'EXT:jv_media_connector/Resources/Public/Icons/tx_jvmediaconnector_domain_model_media.gif'
     ],
     'interface' => [
-        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, userpath, usecount, feuser, sysfile',
+        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden,  usecount, feuser, sysfile',
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, userpath, usecount, feuser, sysfile, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
+        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, usecount, feuser, sysfile, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
     ],
     'columns' => [
         'sys_language_uid' => [
@@ -115,15 +115,6 @@ return [
             ],
         ],
 
-        'userpath' => [
-            'exclude' => true,
-            'label' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media.userpath',
-            'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim,required'
-            ],
-        ],
         'usecount' => [
             'exclude' => true,
             'label' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media.usecount',
@@ -153,19 +144,18 @@ return [
         'sysfile' => [
             'exclude' => true,
             'label' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media.sysfile',
-            'config' => [
-                'type' => 'inline',
-                'foreign_table' => 'tx_cms_core_resource_file',
-                'minitems' => 0,
-                'maxitems' => 1,
-                'appearance' => [
-                    'collapseAll' => 0,
-                    'levelLinksPosition' => 'top',
-                    'showSynchronizationLink' => 1,
-                    'showPossibleLocalizationRecords' => 1,
-                    'showAllLocalizationLink' => 1
-                ],
-            ],
+            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
+                'sysfile',
+                array(
+                    'appearance' => array(
+                        'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference'
+                    ),
+                    'minitems' => 0,
+                    'maxitems' => 1,
+                ),
+                $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext']
+            ),
+
         ],
     
     ],
