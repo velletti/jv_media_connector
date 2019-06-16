@@ -1,0 +1,23 @@
+{
+    "name": "jve/jv-media-connector",
+    "type": "typo3-cms-extension",
+    "description": "handle Media",
+    "authors": [],
+    "require": {
+        "typo3/cms-core": "^8.7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "JVE\\JvMediaConnector\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JVE\\JvMediaConnector\\Tests\\": "Tests"
+        }
+    },
+    "replace": {
+        "jv_media_connector": "self.version",
+        "typo3-ter/jv-media-connector": "self.version"
+    }
+}

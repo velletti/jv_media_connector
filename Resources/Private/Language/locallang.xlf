@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-06-16T10:57:18Z" product-name="jv_media_connector">
+		<header/>
+		<body>
+			<trans-unit id="tx_jvmediaconnector_domain_model_media">
+				<source>Media</source>
+			</trans-unit>
+			<trans-unit id="tx_jvmediaconnector_domain_model_media.userpath">
+				<source>Userpath</source>
+			</trans-unit>
+			<trans-unit id="tx_jvmediaconnector_domain_model_media.usecount">
+				<source>Usecount</source>
+			</trans-unit>
+			<trans-unit id="tx_jvmediaconnector_domain_model_media.feuser">
+				<source>Feuser</source>
+			</trans-unit>
+			<trans-unit id="tx_jvmediaconnector_domain_model_media.sysfile">
+				<source>Sysfile</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

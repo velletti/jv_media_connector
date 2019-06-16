@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-06-16T10:57:18Z" product-name="jv_media_connector">
+		<header/>
+		<body>
+			<trans-unit id="userpath.description">
+				<source>the folder whre images are stored. Computed by users uid</source>
+			</trans-unit>
+			<trans-unit id="usecount.description">
+				<source>usecount</source>
+			</trans-unit>
+			<trans-unit id="feuser.description">
+				<source>user who had uploaded this image</source>
+			</trans-unit>
+			<trans-unit id="sysfile.description">
+				<source>sysfile</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
