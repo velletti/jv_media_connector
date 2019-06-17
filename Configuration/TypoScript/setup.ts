@@ -65,3 +65,47 @@ config.tx_extbase {
     }
 }
 
+
+cropImage = PAGE
+cropImage {
+
+    typeNum = 44900073
+    config{
+        disableAllHeaderCode = 1
+        additionalHeaders = Content-Type:text/xml;charset=utf-8
+        metaCharset = utf-8
+        xhtml_cleaning = 0
+        debug = 0
+        admPanel = 0
+
+        sendCacheHeaders = 1
+        cache_period = 180
+        #no_cache = 1
+        #Header for Squid
+        additionalHeaders = Cache-Control: must-revalidate, max-age=180, s-maxage=180 | Vary: Accept-Encoding
+
+    }
+    20 = USER_INT
+    20 {
+
+        userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+        pluginName = Connector
+        vendorName = JVE
+        extensionName = JvMediaConnector
+        controller = Media
+        action = showVisualLoginCached
+
+        switchableControllerActions {
+            Media {
+                1 = cropImage
+            }
+        }
+
+        settings < plugin.tx_jvmediaconnector_connector.settings
+        persistence < plugin.tx_jvmediaconnector_connector.persistence
+        view < plugin.tx_jvmediaconnector_connector.view
+
+    }
+}
+
+

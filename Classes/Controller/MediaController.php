@@ -86,67 +86,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     }
 
-    /**
-     * action create
-     *
-     * @return void
-     */
-    public function createAction()
-    {
-        $userUid = substr( "00000000" . $feuserUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] ) , -8 , 8 ) ;
 
-
-        /** @var \JVE\JvMediaConnector\Domain\Model\Media $newMedia */
-        $newMedia = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\Media::class);
-        /** @var array $uploadedFiles */
-        $uploadedFiles = $this->uploadFileService->getUploadedFiles('sysfile') ;
-
-        /** @var \Fab\MediaUpload\UploadedFile $uploadedFile */
-        foreach($uploadedFiles as $uploadedFile) {
-
-
-            $uploadedFile->getTemporaryFileNameAndPath();
-
-            $storage = ResourceFactory::getInstance()->getStorageObject(1);
-            $orgFolder = $storage->getFolder( "user_upload/org/" , true );
-            if( !$storage->hasFolder("user_upload/org/" . $userUid)) {
-                $storage->createFolder( $userUid , $orgFolder ) ;
-            }
-            $targetFolder = $storage->getFolder( "user_upload/org/" . $userUid , true );
-
-            /** @var \TYPO3\CMS\Core\Resource\File $file */
-            $file = $storage->addFile(
-                $uploadedFile->getTemporaryFileNameAndPath(),
-                $targetFolder,
-                $uploadedFile->getFileName(),
-                \TYPO3\CMS\Core\Resource\DuplicationBehavior::RENAME
-            );
-
-            # Note: Use method `addUploadedFile` instead of `addFile` if file is uploaded
-            # via a regular "input" control instead of the upload widget (fine uploader plugin)
-            # $file = $storage->addUploadedFile()
-            $this->persistenceManager->persistAll() ;
-            /** @var \JVE\JvMediaConnector\Domain\Model\FileReference $fileReference */
-            $fileReference = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\FileReference::class);
-            $fileReference->setFile($file);
-            $this->persistenceManager->persistAll() ;
-
-            $newMedia->setSysfile($fileReference );
-            $newMedia->setFeuser( intval( $GLOBALS['TSFE']->fe_user->user['uid'])) ;
-            $newMedia->sethidden( 1 ) ;
-            $newMedia->sethidden( 1 ) ;
-
-            $this->mediaRepository->add($newMedia);
-            $this->persistenceManager->persistAll() ;
-            echo $file->getUid() ;
-            echo "<hr>";
-            echo $newMedia->getUid() ;
-            die;
-
-        }
-
-        $this->redirect('list');
-    }
 
     /**
      * action delete
@@ -161,15 +101,9 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         $this->redirect('list');
     }
 
-    /**
-     * action confirm
-     *
-     * @return void
-     */
-    public function confirmAction()
-    {
 
-    }
+
+
 
     /**
      * action resize
@@ -180,4 +114,191 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     {
 
     }
+    /**
+     * @param string $image
+     * @param array $cropData
+     *
+     * @return boolean
+     */
+    protected function doCrop($image, $cropData) {
+        // @todo: change this to $this->settings['avatarHeight'] ... when all sizes are adjusted, hardcoded for now
+        $targetHeight = 768;
+        $targetWidth = 1024;
+        $quality = 85;
+
+        $sourceImage = $this->readImage($image);
+
+        $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
+
+        imagecopyresampled($tempImage, $sourceImage, 0, 0, $cropData['x'], $cropData['y'], $targetWidth, $targetHeight, $cropData['x2'] - $cropData['x'], $cropData['y2'] - $cropData['y']);
+
+        return $this->writeImage($tempImage, $image, $quality);
+
+    }
+
+    /**
+     * @param string $image
+     *
+     * @return resource
+     */
+    protected function readImage($image) {
+
+        $imageInfo = getimagesize($image);
+        $sourceImage = null;
+
+        switch ($imageInfo['2']) {
+            case '1':
+                $sourceImage = imagecreatefromgif($image);
+                break;
+            case '2':
+                $sourceImage = imagecreatefromjpeg($image);
+                break;
+            case '3':
+                $sourceImage = imagecreatefrompng($image);
+                break;
+            default:
+                break;
+        }
+
+        return $sourceImage;
+    }
+
+    /**
+     * @param resource $tempImage
+     * @param string $image
+     * @param integer $quality percentage value for quality ( e.g. 70 )
+     *
+     * @return bool
+     */
+    protected function writeImage($tempImage, $image, $quality) {
+        $success = FALSE;
+        $imageInfo = getimagesize($image);
+
+        switch ($imageInfo['2']) {
+            case '1':
+                $success = imagegif($tempImage, $image);
+                break;
+            case '2':
+                $success = imagejpeg($tempImage, $image, $quality);
+                break;
+            case '3':
+                $success = imagepng($tempImage, $image, floor($quality / 10));
+                break;
+            default:
+                break;
+        }
+
+        return $success;
+    }
+
+    /**
+     * cropImage Action, called via ajax
+     */
+    public function cropImageAction() {
+        $cropData = GeneralUtility::_POST();
+        if( $this->request->hasArgument("cropData")) {
+            $cropData = $this->request->getArgument("cropData") ;
+        }
+
+        $relativeImagePath = substr( $cropData['img'] , 1 , 999) ;
+        // toDo : get sanitized Filename without " " or special Chars ..
+        $fileName = "test.jpg" ;
+
+        $imageUrl = GeneralUtility::getFileAbsFileName($relativeImagePath);
+        unset($cropData['img']) ;
+        $response = array(
+            'meta' => array(
+                'success' => FALSE,
+                'message' => 'uploaderror_filecrop'
+            ),
+
+        );
+        if( file_exists( $imageUrl)) {
+            if ($this->doCrop($imageUrl, $cropData)) {
+                if(  $this->createMedia($relativeImagePath , $fileName )) {
+                    $response = array(
+                        'meta' => array(
+                            'success' => TRUE
+                        ),
+                        'data' => array(
+                            'image' => $relativeImagePath
+                        )
+                    );
+                }
+            }
+        }
+
+        echo json_encode($response);
+        exit();
+
+    }
+
+    /**
+     * action create
+     *
+     * @return void
+     */
+    protected function createMedia($relativeImagePath , $fileName )
+    {
+        $userUid = substr( "00000000" . $feuserUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] ) , -8 , 8 ) ;
+        /** @var \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository $userRepository */
+        $userRepository  = $this->objectManager->get(\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository::class);
+
+        /** @var \TYPO3\CMS\Extbase\Domain\Model\FrontendUser $user */
+        $user = $userRepository->findByUid($userUid) ;
+
+        /** @var \JVE\JvMediaConnector\Domain\Model\Media $newMedia */
+        $newMedia = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\Media::class);
+
+        $storage = ResourceFactory::getInstance()->getStorageObject(1);
+        $orgFolder = $storage->getFolder( "user_upload/org/" , true );
+        if( !$storage->hasFolder("user_upload/org/" . $userUid)) {
+            $storage->createFolder( $userUid , $orgFolder ) ;
+        }
+        $targetFolder = $storage->getFolder( "user_upload/org/" . $userUid , true );
+
+        /** @var \TYPO3\CMS\Core\Resource\File $file */
+        $file = $storage->addFile(
+            $relativeImagePath ,
+            $targetFolder,
+            $fileName,
+            \TYPO3\CMS\Core\Resource\DuplicationBehavior::RENAME
+        );
+
+        # Note: Use method `addUploadedFile` instead of `addFile` if file is uploaded
+        # via a regular "input" control instead of the upload widget (fine uploader plugin)
+        # $file = $storage->addUploadedFile()
+        $this->persistenceManager->persistAll() ;
+        /** @var \JVE\JvMediaConnector\Domain\Model\FileReference $fileReference */
+        $fileReference = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\FileReference::class);
+        $fileReference->setFile($file);
+        $this->persistenceManager->persistAll() ;
+
+        $newMedia->setSysfile($fileReference );
+        $newMedia->setFeuser( $user ) ;
+
+        $this->mediaRepository->add($newMedia);
+        $this->persistenceManager->persistAll() ;
+        if ( $newMedia->getUid() > 0 ) {
+            return true ;
+        };
+        return false ;
+
+
+
+    }
+
+
+
+    /**
+     * action confirm
+     *
+     * @return void
+     */
+    public function confirmAction()
+    {
+
+    }
+
+
 }
