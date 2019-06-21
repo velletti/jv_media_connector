@@ -272,6 +272,9 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         /** @var \JVE\JvMediaConnector\Domain\Model\FileReference $fileReference */
         $fileReference = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\FileReference::class);
         $fileReference->setFile($file);
+        $fileReference->setTablenames("tx_jvmediaconnector_domain_model_media");
+        $fileReference->setTableLocal("sys_file");
+
         $this->persistenceManager->persistAll() ;
 
         $newMedia->setSysfile($fileReference );

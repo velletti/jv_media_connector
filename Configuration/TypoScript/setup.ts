@@ -22,7 +22,7 @@ plugin.tx_jvmediaconnector_connector {
     mvc {
         #callDefaultActionIfActionCantBeResolved = 1
     }
-    setttings {
+    settings {
         pids {
             # Page Id where the cached LIST plugin is placed
             list = 34

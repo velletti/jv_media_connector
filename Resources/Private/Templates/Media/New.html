@@ -11,7 +11,7 @@
     <f:render partial="FormErrors" />
 
 
-    <f:form action="resize"  name="newMedia" object="{newMedia}">
+    <f:form action="resize"  name="newMedia" object="{newMedia}"  enctype="multipart/form-data">
       <mu:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
       <f:form.submit value="Continue" />
     </f:form>

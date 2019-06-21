@@ -7,7 +7,7 @@
 		<ul class="qq-upload-list-selector qq-upload-list">
 			<f:for each="{uploadedFiles}" as="uploadedFile" iteration="index">
 				<li class="alert alert-success p-0">
-					<f:image src="/{uploadedFile.temporaryFileNameAndPath}" maxWidth="1024" alt="img" id="unCroppedImg-{index.index}" class="w-100 h-auto " />
+					<f:image src="/{uploadedFile.temporaryFileNameAndPath}" maxWidth="1024"  maxHeight="600"  alt="img" id="unCroppedImg-{index.index}" class="w-100 h-auto " />
 				</li>
 			</f:for>
 		</ul>

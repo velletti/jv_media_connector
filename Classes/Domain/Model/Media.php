@@ -35,13 +35,21 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     /**
      * $sysfile
-     * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\FileReference>
+     * @var \TYPO3\CMS\Extbase\Domain\Model\FileReference
      */
     protected $sysfile ;
 
 
 
-
+    /**
+     * Initializes all ObjectStorage properties
+     *
+     * @return void
+     */
+    protected function initStorageObjects()
+    {
+        $this->sysfile = new \TYPO3\CMS\Extbase\Domain\Model\FileReference ;
+    }
 
     /**
      * Returns the usecount
@@ -86,9 +94,8 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * Returns the sysfile
+     * sets  the sysfile
      *
-     * @return
      */
     public function setSysfile(\TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile)
     {
@@ -105,14 +112,5 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
         return $this->sysfile;
     }
 
-    /**
-     * Sets the sysfile
-     *
-     * @param \TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile
-     * @return void
-     */
-    public function addSysfile(\TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile)
-    {
-        $this->sysfile->attach($sysfile);
-    }
+
 }

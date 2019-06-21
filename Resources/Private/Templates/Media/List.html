@@ -1,3 +1,5 @@
+{namespace mu=Fab\MediaUpload\ViewHelpers}
+
 <html xmlns:f="https://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 	<f:layout name="Default" />
 
@@ -6,22 +8,20 @@
 
 		<f:flashMessages />
 
-		<table  class="tx_jvmediaconnector" >
-			<tr>
-				<th><f:translate key="tx_jvmediaconnector_domain_model_media.userpath" /></th>
-				<th><f:translate key="tx_jvmediaconnector_domain_model_media.usecount" /></th>
-				<th> </th>
-				<th> </th>
-			</tr>
+		<div class="tx_jvmediaconnector" >
 
-			<f:for each="{medias}" as="media">
-				<tr>
-					<td><f:link.action action="show" arguments="{media : media}"> {media.usecount}</f:link.action></td>
-					<td><f:link.action action="delete" arguments="{media : media}">Delete</f:link.action></td>
-				</tr>
-			</f:for>
-		</table>
-
-		<f:link.action pageUid="{settings.pids.manage}" action="new">New Media</f:link.action>
+			<f:form action="resize" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
+				<mu:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
+				<f:form.submit value="Continue" />
+			</f:form>
+			<div class="row">
+				<f:for each="{medias}" as="media">
+					<f:debug>{media.sysfile}</f:debug>
+					<div class="card">
+						<f:link.action action="delete" arguments="{media : media}">Delete</f:link.action>
+					</div>
+				</f:for>
+			</div>
+		</div>
 	</f:section>
 </html>

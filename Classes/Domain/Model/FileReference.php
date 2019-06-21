@@ -24,4 +24,18 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     public function setFile(\TYPO3\CMS\Core\Resource\File $file) {
         $this->originalFileIdentifier = (int)$file->getUid();
     }
+
+    /**
+     * @params string $tablename
+     */
+    public function setTablenames( $tablename) {
+        $this->tablenames = trim($tablename) ;
+    }
+
+    /**
+     * @params string $table
+     */
+    public function setTableLocal( $table) {
+        $this->tableLocal = trim($table) ;
+    }
 }
