@@ -35,7 +35,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     /**
      * $sysfile
-     * @var \TYPO3\CMS\Extbase\Domain\Model\FileReference
+     * @var \JVE\JvMediaConnector\Domain\Model\FileReference
      */
     protected $sysfile ;
 
@@ -48,7 +48,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      */
     protected function initStorageObjects()
     {
-        $this->sysfile = new \TYPO3\CMS\Extbase\Domain\Model\FileReference ;
+        $this->sysfile = new \JVE\JvMediaConnector\Domain\Model\FileReference ;
     }
 
     /**

@@ -115,35 +115,102 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     }
     /**
-     * @param string $image
+     * @param string $image absolutePathToFileName check if  exist is done before
      * @param array $cropData
      *
-     * @return boolean
+     * @return array
      */
     protected function doCrop($image, $cropData) {
-        // @todo: change this to $this->settings['avatarHeight'] ... when all sizes are adjusted, hardcoded for now
-        $targetHeight = 768;
-        $targetWidth = 1024;
-        $quality = 85;
+        $imageInfo = getimagesize($image);
+        if ( $imageInfo[0] == 0 ) { return array( "success" => false , "debug" => "ERR-01: No Image dimensions or no image")  ;}
+        if ( $cropData['dw'] == 0 ) { return array( "success" => false , "debug" => "ERR-02: No display dimensions")  ;}
 
-        $sourceImage = $this->readImage($image);
+        $debug['imageInfo'] = $imageInfo ;
+        $debug['cropData'] = $cropData ;
 
-        $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
 
-        imagecopyresampled($tempImage, $sourceImage, 0, 0, $cropData['x'], $cropData['y'], $targetWidth, $targetHeight, $cropData['x2'] - $cropData['x'], $cropData['y2'] - $cropData['y']);
+        if( is_array($this->settings ) && is_array($this->settings['crop'] )) {
+            $debug['settings'] = $this->settings['crop']  ;
+            if( array_key_exists('maxHeight' , $this->settings['crop'])) {
+                $maxHeight = $this->settings['crop']['maxHeight'];
+            } else {
+                $maxHeight = 768 ;
+            }
 
-        return $this->writeImage($tempImage, $image, $quality);
+            if( array_key_exists('maxWidth' , $this->settings['crop'])) {
+                $maxWidth = $this->settings['crop']['maxWidth'];
+            } else {
+                $maxWidth = 1024 ;
+            }
+            if( array_key_exists('quality' , $this->settings['crop'])) {
+                $quality = $this->settings['crop']['quality'];
+            } else {
+                $quality = 80 ;
+            }
+        }
+
+        $debug['maxWidth'] = $maxWidth ;
+        $debug['maxHeight'] = $maxHeight ;
+
+        $ratio = $imageInfo[0] / $cropData['dw'] ;
+
+        $debug["ratio"] = $ratio ;
+        $src_w = ( $cropData['x2'] - $cropData['x'])  * $ratio ;
+        $src_h = ( $cropData['y2'] - $cropData['y']) *  $ratio ;
+        $src_x =  $cropData['x'] *  $ratio ;
+        $src_y =  $cropData['y'] *  $ratio ;
+
+        $dest_x = 0  ;
+        $dest_y = 0  ;
+        if(  $imageInfo[0] > $maxWidth ) {
+            $dest_w = $maxWidth ;
+            $dest_h = $imageInfo[1] * ( $maxWidth / $imageInfo[0]) ;
+            $debug["reducedbyMaxW"] = true ;
+        } else {
+            $dest_w = $imageInfo[0] ;
+            $dest_h = $imageInfo[0] /  ( $src_w  )  * $src_h ;
+        }
+        if ( $dest_h > $maxHeight ) {
+            $dest_h =  $maxHeight  ;
+            $dest_w = $dest_w * ( $maxHeight / $dest_h ) ;
+            $debug["reducedbyMaxH"] = true ;
+        }
+
+
+
+
+
+        $sourceImage = $this->readImage($image , $imageInfo );
+
+        $tempImage = imagecreatetruecolor($dest_w, $dest_h);
+        $debug["command"] = array (
+            'dest_x' => $dest_x ,
+            'dest_y' => $dest_y ,
+            'src_x' => $src_x  ,
+            'src_y' => $src_y ,
+            'dest_w' => $dest_w ,
+            'dest_h' => $dest_h ,
+            'src_w' => $src_w ,
+            'src_h' => $src_h ,
+        ) ;
+
+        imagecopyresampled(     $tempImage, $sourceImage, $dest_x, $dest_y, $src_x , $src_y , $dest_w, $dest_h, $src_w , $src_h);
+
+        $result =  $this->writeImage($tempImage, $image, $quality , $imageInfo);
+ // var_dump($debug) ;
+// die;
+        return array( "success" => $result , 'debug' => $debug ) ;
 
     }
 
     /**
-     * @param string $image
+     * @param string $image absolutePathToFileName
+     * @param array $imageInfo  result from getimagesize() in DoCrop()
      *
      * @return resource
      */
-    protected function readImage($image) {
+    protected function readImage($image , $imageInfo ) {
 
-        $imageInfo = getimagesize($image);
         $sourceImage = null;
 
         switch ($imageInfo['2']) {
@@ -165,14 +232,14 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     /**
      * @param resource $tempImage
-     * @param string $image
+     * @param string $image absolutePathToFileName
      * @param integer $quality percentage value for quality ( e.g. 70 )
+     * @param array $imageInfo result from getimagesize() in DoCrop() ;
      *
      * @return bool
      */
-    protected function writeImage($tempImage, $image, $quality) {
+    protected function writeImage($tempImage, $image, $quality , $imageInfo) {
         $success = FALSE;
-        $imageInfo = getimagesize($image);
 
         switch ($imageInfo['2']) {
             case '1':
@@ -214,21 +281,25 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
         );
         if( file_exists( $imageUrl)) {
-            if ($this->doCrop($imageUrl, $cropData)) {
+            $crop = $this->doCrop($imageUrl, $cropData) ;
+            if ($crop['success']) {
+                $response['meta']['debug'] = $crop['debug'] ;
+                $response['meta']['message'] = "upload_cretefile_error" ;
                 if(  $this->createMedia($relativeImagePath , $fileName )) {
-                    $response = array(
-                        'meta' => array(
-                            'success' => TRUE
-                        ),
-                        'data' => array(
-                            'image' => $relativeImagePath
-                        )
-                    );
+                    $response['meta']['success'] = TRUE ;
+                    $response['data']['image'] = $relativeImagePath ;
                 }
             }
         }
-
-        echo json_encode($response);
+        $jsonOutput = json_encode($response);
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Pragma: no-cache');
+        header('Content-Length: ' . strlen($jsonOutput));
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Transfer-Encoding: 8bit');
+        echo $jsonOutput;
         exit();
 
     }
@@ -236,7 +307,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     /**
      * action create
      *
-     * @return void
+     * @return boolean
      */
     protected function createMedia($relativeImagePath , $fileName )
     {
@@ -271,6 +342,9 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         $this->persistenceManager->persistAll() ;
         /** @var \JVE\JvMediaConnector\Domain\Model\FileReference $fileReference */
         $fileReference = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\FileReference::class);
+        if( is_array($this->settings ) && is_array($this->settings['pids'] ) &&  array_key_exists('storagePid' , $this->settings['pids'])) {
+            $fileReference->setPid($this->settings['pids']['storagePid']);
+        }
         $fileReference->setFile($file);
         $fileReference->setTablenames("tx_jvmediaconnector_domain_model_media");
         $fileReference->setTableLocal("sys_file");
@@ -279,6 +353,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
         $newMedia->setSysfile($fileReference );
         $newMedia->setFeuser( $user ) ;
+        $newMedia->setPid( $fileReference->getPid() ) ;
 
         $this->mediaRepository->add($newMedia);
         $this->persistenceManager->persistAll() ;
@@ -286,8 +361,6 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
             return true ;
         };
         return false ;
-
-
 
     }
 

@@ -10,13 +10,13 @@
 
 		<div class="tx_jvmediaconnector" >
 
-			<f:form action="resize" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
+			<f:form  id="qq-upload-form" action="resize" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
 				<mu:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
 				<f:form.submit value="Continue" />
 			</f:form>
 			<div class="row">
 				<f:for each="{medias}" as="media">
-					<f:debug>{media.sysfile}</f:debug>
+
 					<div class="card">
 						<f:link.action action="delete" arguments="{media : media}">Delete</f:link.action>
 					</div>

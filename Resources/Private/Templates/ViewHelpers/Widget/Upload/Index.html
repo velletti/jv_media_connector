@@ -26,24 +26,31 @@
                   <span>{f:translate(key: 'fineUploader.processingDropFiles')}</span>
                   <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
               </span>
-			<ul id="qq-upload-list-{uniqueId}" class="qq-upload-list-selector qq-upload-list">
-				<li>
-					<div class="qq-progress-bar-container-selector">
-						<div class="qq-progress-bar-selector qq-progress-bar"></div>
+			<ul id="qq-upload-list-{uniqueId}" class="qq-upload-list-selector qq-upload-list ">
+				<li class="row d-100">
+					<div class="col-6 col-sm-4 col-lg-3">
+						<div class="qq-progress-bar-container-selector">
+							<div class="qq-progress-bar-selector qq-progress-bar"></div>
+						</div>
+						<span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+						<img class="qq-thumbnail-selector" qq-max-size="240" qq-server-scale>
+						<span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
 					</div>
-					<span class="qq-upload-spinner-selector qq-upload-spinner"></span>
-					<img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>
-					<span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
-					<span class="qq-upload-file-selector qq-upload-file"></span>
-					<input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">
-					<span class="qq-upload-size-selector qq-upload-size"></span>
-					<a class="qq-upload-cancel-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.cancel')}</a>
-					<a class="qq-upload-retry-selector btn btn-small btn-info" href="#">{f:translate(key: 'fineUploader.retry')}</a>
-					<a class="qq-upload-delete-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.delete')}</a>
-					<a class="qq-upload-pause-selector btn btn-small btn-info" href="#">{f:translate(key: 'fineUploader.pause')}</a>
-					<a class="qq-upload-continue-selector btn btn-small btn-info" href="#">{f:translate(key: 'fineUploader.continue')}</a>
-					<span class="qq-upload-status-text-selector qq-upload-status-text"></span>
-					<a class="view-btn btn btn-small btn-info hide" target="_blank">{f:translate(key: 'fineUploader.view')}</a>
+					<div class="col-6  col-sm-8 col-lg-9">
+						<span class="qq-upload-file-selector qq-upload-file"></span>
+						<input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">
+						<span class="qq-upload-size-selector qq-upload-size"></span>
+						<div class="col-12 position-bottom position-right">
+							<a class="qq-upload-cancel-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.cancel')}</a>
+							<a class="qq-upload-retry-selector btn btn-small btn-info" href="#">{f:translate(key: 'fineUploader.retry')}</a>
+							<a class="qq-upload-delete-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.delete')}</a>
+
+
+							<span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+							<a class="view-btn btn btn-small btn-info hide" target="_blank">{f:translate(key: 'fineUploader.continue')}</a>
+						</div>
+
+					</div>
 				</li>
 			</ul>
 		</div>
@@ -113,7 +120,10 @@
 				}
 			};
 			MediaUpload.instances.push(instance);
-
+			jQuery( ".qq-upload-list .view-btn").on("click" , function(e){
+				e.preventDefault() ;
+				jQuery("FROM#qq-upload-form").submit()
+			})
 		</script>
 	</f:format.raw>
 </div>

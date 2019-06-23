@@ -22,14 +22,14 @@
           showSpinner();
 
           Jcrop.load('unCroppedImg-0').then(img => {
-            var ratio = 3/2;
-            jcp = Jcrop.attach(img,{multi:false,w:300,h:200, aspectRatio:ratio, handles: ['sw','nw','ne','se']});
+            var ratio = 4/3;
+            jcp = Jcrop.attach(img,{multi:false,w:240,h:180, aspectRatio:ratio, handles: ['sw','nw','ne','se']});
 
-            const [w,h] = Jcrop.Rect.getMax(300,200,ratio);
+            const [w,h] = Jcrop.Rect.getMax(240,180,ratio);
             var rect = Jcrop.Rect.fromPoints([0,0],[w,h]);
             var widget = jcp.newWidget(rect);
             jcp.focus();
-
+            hideSpinner() ;
           });
 
 
@@ -39,12 +39,15 @@
              showSpinner();
              handleCrop();
           });
-          hideSpinner() ;
+
         });
 
         function handleCrop() {
           if (!jcp.active) { alert("please select an area of the Image") ; }
-          var imageElement = jQuery('#unCroppedImg-0').attr("src");
+          var imageElement = jQuery('#unCroppedImg-0');
+          var imageSrc = jQuery(imageElement).attr("src");
+          var displayH = jQuery(imageElement).height();
+          var displayW = jQuery(imageElement).width();
 
 
           var cropData = {
@@ -56,7 +59,9 @@
                 y2: jcp.active.pos.y2,
                 w: jcp.active.pos.w,
                 h: jcp.active.pos.h ,
-                img: imageElement
+                img: imageSrc,
+                dw: displayW ,
+                dh: displayH ,
               }
             }
           };
@@ -81,7 +86,7 @@
             hideSpinner() ;
             if( jQuery("#goListUrl").length ) {
               if( jQuery("#goListUrl").attr("href") ) {
-                 window.location.href = jQuery("#goListUrl").attr("href") ;
+          //       window.location.href = jQuery("#goListUrl").attr("href") ;
               }
             }
 

@@ -30,7 +30,12 @@ plugin.tx_jvmediaconnector_connector {
             # Page Id where the uncached  plugin is placed, that manages the To upload, resize, create and delete media
             manage = 35
 
-
+            storagePid = {$plugin.tx_jvmediaconnector_connector.persistence.storagePid}
+        }
+        crop {
+            maxHeight = 768
+            maxWidth  = 1024
+            quality = 85
         }
     }
 }
