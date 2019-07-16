@@ -10,15 +10,27 @@
 
 		<div class="tx_jvmediaconnector" >
 
-			<f:form  id="qq-upload-form" action="resize" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
+			<f:form  id="qq-upload-form" action="resize" noCache="1" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
 				<mu:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
-				<f:form.submit value="Continue" />
+
 			</f:form>
-			<div class="row">
+			<div class="row tx_jvmediaconnector-list">
 				<f:for each="{medias}" as="media">
 
-					<div class="card">
-						<f:link.action action="delete" arguments="{media : media}">Delete</f:link.action>
+					<div class="card col-6 col-sm-3 p-3">
+						<f:if condition="{media.sysfile.originalResource}">
+							<f:image image="{media.sysfile.originalResource}" maxWidth="240" class="w-100 h-auto" alt="img"></f:image>
+						</f:if>
+						<div class="row px-2">
+							<f:link.action class="btn btn-danger col-5 m-2 px-2" pageUid="{settings.pids.manage}" action="delete" arguments="{media : media}">
+								<i class="fa fa-trash"></i> Delete
+							</f:link.action>
+							<f:if condition="{sessionData}">
+								<f:link.action class="btn btn-success col-5 m-2 px-2" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
+									<i class="fas fa-link"></i> Use
+								</f:link.action>
+							</f:if>
+						</div>
 					</div>
 				</f:for>
 			</div>
