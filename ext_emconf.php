@@ -16,7 +16,7 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'plugin',
     'author' => 'Jörg Velletti',
     'author_email' => 'typo3@velletti.de',
-    'state' => 'alpha',
+    'state' => 'beta',
     'uploadfolder' => 0,
     'createDirs' => '',
     'clearCacheOnLoad' => 0,
@@ -24,7 +24,7 @@ $EM_CONF[$_EXTKEY] = [
     'constraints' => [
         'depends' => [
             'typo3' => '8.7.0-8.7.99',
-            'media_upload' => '8.7.0-8.7.99',
+            'media_upload' => '1.0.2',
         ],
         'conflicts' => [],
         'suggests' => [],
