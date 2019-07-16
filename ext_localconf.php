@@ -9,11 +9,11 @@ call_user_func(
             'JVE.JvMediaConnector',
             'Connector',
             [
-                'Media' => 'list, new, confirm, resize, create, delete'
+                'Media' => 'list, new, confirm, resize, create, delete, createMediaRef'
             ],
             // non-cacheable actions
             [
-                'Media' => 'new, confirm, resize, create, delete'
+                'Media' => 'list, new, confirm, resize, create, delete , createMediaRef'
             ]
         );
 

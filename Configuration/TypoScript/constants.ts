@@ -12,4 +12,14 @@ plugin.tx_jvmediaconnector_connector {
         # cat=plugin.tx_jvmediaconnector_connector//a; type=string; label=Default storage PID
         storagePid =
     }
+    settings {
+        pids {
+            # Page Id where the cached LIST plugin is placed
+            list = 34
+
+            # Page Id where the uncached  plugin is placed, that manages the To upload, resize, create and delete media
+            manage = 35
+
+        }
+    }
 }

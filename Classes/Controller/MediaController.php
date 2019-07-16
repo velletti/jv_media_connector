@@ -19,10 +19,20 @@ namespace JVE\JvMediaConnector\Controller;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Connection;
 
 class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
+    /**
+     * @var integer
+     */
+    protected $userUid ;
 
+    /**
+     * @var string
+     */
+    protected $userPath ;
 
     /**
      * persistencemanager
@@ -49,6 +59,14 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
 
     /**
+     *  need session handling to remember Id of Event / location / organizer etc you want to link to
+     *
+     * @var \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend $sessionRepository
+     *
+     * @inject
+     */
+    protected $sessionRepository  ;
+    /**
      * action initialize
      *
      * @return void
@@ -61,6 +79,15 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         $this->settings['EmConfiguration']	 			= \JVE\JvEvents\Utility\EmConfigurationUtility::getEmConf();
 
         $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
+        $this->userUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] )  ;
+        $this->userPath = substr( "00000000" . $this->userUid  , -8 , 8 ) ;
+
+
+
+        $this->sessionRepository = GeneralUtility::makeInstance( "TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend" ) ;
+        $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
+        $this->sessionRepository->initialize( "FE" , $config  ) ;
+
     }
 
 
@@ -72,8 +99,12 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     public function listAction()
     {
-        $medias = $this->mediaRepository->findAll();
+
+
+
+        $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
         $this->view->assign('medias', $medias);
+        $this->view->assign('sessionData', $this->getSessionData() );
     }
 
     /**
@@ -83,7 +114,9 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     public function newAction()
     {
-
+        if ( $this->userUid < 1 ) {
+            $this->redirect('list' , null , null, null ,$this->settings['pids']['list']);
+        }
     }
 
 
@@ -96,9 +129,88 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     public function deleteAction(\JVE\JvMediaConnector\Domain\Model\Media $media)
     {
-        $this->addFlashMessage('The object was deleted. Please be aware that this action is publicly accessible unless you implement an access check. See https://docs.typo3.org/typo3cms/extensions/extension_builder/User/Index.html', '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
-        $this->mediaRepository->remove($media);
-        $this->redirect('list');
+        if ( $this->userUid == $media->getFeuser()->getUid() ) {
+
+            $sessionData = $this->getSessionData() ;
+
+
+            if( is_array( $sessionData ) ) {
+
+                /** @var \TYPO3\CMS\Core\Database\ConnectionPool $connectionPool */
+                $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+
+                /** @var \TYPO3\CMS\Core\Database\Connection $dbConnectionForSysRef */
+                $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
+
+                /** @var \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder */
+                $queryBuilder = $dbConnectionForSysRef->createQueryBuilder();
+
+                // ****************** 1. get the sys_file UID   ********************
+                $affectedRows = $queryBuilder
+                    ->select("uid", "uid_local" , "uid_foreign")
+                    ->from('sys_file_reference')
+                    ->where(
+                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($media->getSysfile()->getUid() ))
+                    )
+                    ->execute();
+                $mediaRow = $affectedRows->fetch();
+
+                // ****************** 2. get the sys_file record   ********************
+                if( is_array($mediaRow) && array_key_exists("uid_local" , $mediaRow )) {
+                    $fileUid = $mediaRow['uid_local'] ;
+                    /** @var \TYPO3\CMS\Core\Database\Connection $dbConnectionForSysRef */
+                    $dbConnectionForSysFile = $connectionPool->getConnectionForTable('sys_file');
+
+                    /** @var \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder */
+                    $queryBuilderFile = $dbConnectionForSysFile->createQueryBuilder();
+
+                    $fileQuery = $queryBuilderFile
+                        ->select("*" )
+                        ->from('sys_file')
+                        ->where(
+                            $queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid  ))
+                        )
+                        ->execute();
+                    $fileRow = $fileQuery->fetch();
+
+                    // ****************** 3. Delete File from  sys_file record   ********************
+                    // works aktually only with /fileadmin/ folder => storage == 1
+
+                    if( is_array($fileRow) && array_key_exists("identifier" , $fileRow )) {
+                        // ToDo : implement use File Storage  instead of /fileadmin/
+                        $file2delete =   \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName("fileadmin" . $fileRow['identifier']);
+                        if (strpos(  $file2delete  , $fileRow['identifier'] ) > 0  && file_exists($file2delete)) {
+                            unlink( $file2delete) ;
+                        }
+                        // ****************** 4. Delete row from  sys_file record   ********************
+                        $queryBuilderFile
+                            ->delete('sys_file')
+                            ->where(
+                                $queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid )),
+                                $queryBuilderFile->expr()->eq('storage', $queryBuilderFile->createNamedParameter( 1 ))
+                            )
+                            ->execute();
+                    }
+                }
+                if ( $fileUid > 0 ) {
+                    // remove existing Relations to this media  UID Local may change. Igore that relation may not exists
+                    $affectedRows = $queryBuilder
+                        ->delete('sys_file_reference')
+                        ->where(
+                            $queryBuilder->expr()->eq('table_local', $queryBuilder->createNamedParameter('sys_file')),
+                            $queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter( $fileUid ))
+                        )
+                        ->execute();
+                }
+
+            }
+
+            $this->mediaRepository->remove($media);
+        } else {
+
+            $this->addFlashMessage('The object was NOT deleted. User "' .  $this->userUid . '"" has NO Access to this image!' . $media->getUid(), '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
+        }
+        $this->redirect('list' , null , null, array( "random" => time() ) ,$this->settings['pids']['list']);
     }
 
 
@@ -311,22 +423,22 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     protected function createMedia($relativeImagePath , $fileName )
     {
-        $userUid = substr( "00000000" . $feuserUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] ) , -8 , 8 ) ;
+
         /** @var \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository $userRepository */
         $userRepository  = $this->objectManager->get(\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository::class);
 
         /** @var \TYPO3\CMS\Extbase\Domain\Model\FrontendUser $user */
-        $user = $userRepository->findByUid($userUid) ;
+        $user = $userRepository->findByUid($this->userUid) ;
 
         /** @var \JVE\JvMediaConnector\Domain\Model\Media $newMedia */
         $newMedia = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\Media::class);
 
         $storage = ResourceFactory::getInstance()->getStorageObject(1);
         $orgFolder = $storage->getFolder( "user_upload/org/" , true );
-        if( !$storage->hasFolder("user_upload/org/" . $userUid)) {
-            $storage->createFolder( $userUid , $orgFolder ) ;
+        if( !$storage->hasFolder("user_upload/org/" . $this->userPath)) {
+            $storage->createFolder( $this->userPath , $orgFolder ) ;
         }
-        $targetFolder = $storage->getFolder( "user_upload/org/" . $userUid , true );
+        $targetFolder = $storage->getFolder( "user_upload/org/" . $this->userPath , true );
 
         /** @var \TYPO3\CMS\Core\Resource\File $file */
         $file = $storage->addFile(
@@ -367,6 +479,77 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
 
     /**
+     * action createMediaRef Has no views ... redirects back
+     *
+     * @return void
+     */
+    public function createMediaRefAction() {
+
+        $sessionData = $this->getSessionData() ;
+
+        if( is_array( $sessionData )  && $this->request->hasArgument('media')  ) {
+
+            /** @var \TYPO3\CMS\Core\Database\ConnectionPool $connectionPool */
+            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+
+            /** @var \TYPO3\CMS\Core\Database\Connection $dbConnectionForSysRef */
+            $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
+
+            /** @var \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder */
+            $queryBuilder = $dbConnectionForSysRef->createQueryBuilder();
+
+
+            $media = intval( $this->request->getArgument('media')) ;
+
+            $affectedRows = $queryBuilder
+                ->select( "uid","uid_local" )
+                ->from('sys_file_reference')
+                ->where(
+                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter( $media ))
+                )
+                ->execute();
+
+            $mediaRow = $affectedRows->fetch() ;
+
+            if ( $sessionData['maxRelations'] < 2 ) {
+                // remove existing Relations to this media  UID Local may change. Igore that relation may not exists
+                $affectedRows = $queryBuilder
+                    ->delete('sys_file_reference')
+                    ->where(
+                        $queryBuilder->expr()->eq('table_local', $queryBuilder->createNamedParameter('sys_file')),
+                        $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter($sessionData['table'] )),
+                        $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($sessionData['id'] )),
+                        $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($sessionData['fieldname'] ))
+                    )
+                    ->execute();
+            }
+
+
+            $affectedRows = $queryBuilder
+                ->insert('sys_file_reference')
+                ->values([
+                    'uid_local' => intval( $mediaRow['uid_local']) ,
+                    'table_local' => 'sys_file'  ,
+                    'uid_foreign' => intval( $sessionData['id'] ) ,
+                    'tablenames' => $sessionData['table']  ,
+                    'fieldname' => $sessionData['fieldname']  ,
+
+                ])
+                ->execute();
+
+            $insertId = $dbConnectionForSysRef->lastInsertId() ;
+            // create Reference from Array
+        }
+// got from EM Settings
+        $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
+        $this->cacheService->clearPageCache( $clearCachePids );
+        $this->addFlashMessage('Media was linked successful. Need to clear Server Cache ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
+
+        $this->redirect('list' , null , null, array( "insertId" => $insertId ) ,$this->settings['pids']['list']);
+
+    }
+
+    /**
      * action confirm
      *
      * @return void
@@ -376,5 +559,32 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     }
 
+    private function getSessionData() {
+        $sessionData = null ;
+        $sessionId = "media_uid_" . $this->userPath ;
+        if($this->request->hasArgument('reference')) {
+            // https://tango.ddev.local/index.php?id=34&no_cache=1&tx_jvmediaconnector_connector[reference][id]=1&tx_jvmediaconnector_connector[reference][table]=tx_jv_events_domain_model_event
+            $sessionData = $this->request->getArgument('reference') ;
+            if( array_key_exists( 'table', $sessionData)  && array_key_exists( 'id', $sessionData)  ) {
+                try{
+                    $this->sessionRepository->remove($sessionId ) ;
+                    $this->sessionRepository->set($sessionId , array( "ses_data" => serialize($sessionData )) ) ;
+                } catch( \TYPO3\CMS\Core\Session\Backend\Exception\SessionNotCreatedException $e) {
+                    // ignore this
+                }
+            }
+
+        }
+        if(!$sessionData) {
+            try{
+                /** @var array $session */
+                $session = $this->sessionRepository->get($sessionId ) ;
+                $sessionData = unserialize( $session['ses_data'] ) ;
+            } catch( \TYPO3\CMS\Core\Session\Backend\Exception\SessionNotFoundException $e) {
+                // ignore this
+            }
+        }
+        return $sessionData ;
+    }
 
 }

@@ -97,7 +97,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * sets  the sysfile
      *
      */
-    public function setSysfile(\TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile)
+    public function setSysfile(\JVE\JvMediaConnector\Domain\Model\FileReference $sysfile)
     {
         $this->sysfile = $sysfile ;
     }
@@ -105,7 +105,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Returns the sysfile
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Model\FileReference $sysfile
+     * @return \JVE\JvMediaConnector\Domain\Model\FileReference $sysfile
      */
     public function getSysfile()
     {

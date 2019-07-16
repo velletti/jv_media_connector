@@ -38,4 +38,14 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     public function setTableLocal( $table) {
         $this->tableLocal = trim($table) ;
     }
+
+    /**
+     * @return int
+     */
+    public function getUidLocal()
+    {
+        return $this->uidLocal;
+    }
+
+
 }

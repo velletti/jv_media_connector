@@ -43,14 +43,13 @@
 						<div class="col-12 position-bottom position-right">
 							<a class="qq-upload-cancel-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.cancel')}</a>
 							<a class="qq-upload-retry-selector btn btn-small btn-info" href="#">{f:translate(key: 'fineUploader.retry')}</a>
-							<a class="qq-upload-delete-selector btn btn-small btn-warning" href="#">{f:translate(key: 'fineUploader.delete')}</a>
-
+							<a class="qq-upload-delete-selector btn btn-small mx-2 btn-warning" href="#">{f:translate(key: 'fineUploader.delete')}</a>
 
 							<span class="qq-upload-status-text-selector qq-upload-status-text"></span>
-							<a class="view-btn btn btn-small btn-info hide" target="_blank">{f:translate(key: 'fineUploader.continue')}</a>
+							<span class="view-btn mx-2 btn btn-small btn-info hide" onClick="goToNextStep( this )" >{f:translate(key: 'fineUploader.continue')} =&gt;</span>
 						</div>
 
-					</div>
+				    </div>
 				</li>
 			</ul>
 		</div>
@@ -94,6 +93,7 @@
 
 			var instance = {
 				id: uploadWidgetIdentifier,
+				onComplete: goToNextStep ,
 				settings: {
 					maximumItems: maximumItems,
 					maximumSize: maximumSize,
@@ -120,10 +120,12 @@
 				}
 			};
 			MediaUpload.instances.push(instance);
-			jQuery( ".qq-upload-list .view-btn").on("click" , function(e){
-				e.preventDefault() ;
-				jQuery("FROM#qq-upload-form").submit()
-			})
+
+			function goToNextStep( e ){
+				e.preventDefault;
+				jQuery("FORM#qq-upload-form").submit()
+			}
+
 		</script>
 	</f:format.raw>
 </div>

@@ -19,7 +19,7 @@
 									</numIndex>
 									<numIndex index="1">
 										<numIndex index="0">Manage Media</numIndex>
-										<numIndex index="1">Media-&gt;new;Media-&gt;confirm;Media-&gt;resize;Media-&gt;create;Media-&gt;delete</numIndex>
+										<numIndex index="1">Media-&gt;new;Media-&gt;confirm;Media-&gt;resize;Media-&gt;create;Media-&gt;delete;Media->createMediaRef</numIndex>
 									</numIndex>
 								</items>
 							</config>
