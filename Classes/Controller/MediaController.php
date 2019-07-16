@@ -60,10 +60,9 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     /**
      *  need session handling to remember Id of Event / location / organizer etc you want to link to
-     *
-     * @var \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend $sessionRepository
-     *
+     * @var \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend
      * @inject
+
      */
     protected $sessionRepository  ;
     /**
