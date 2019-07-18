@@ -31,6 +31,7 @@ plugin.tx_jvmediaconnector_connector {
             manage = 35
 
             storagePid = {$plugin.tx_jvmediaconnector_connector.persistence.storagePid}
+            clearCachePids =  {$plugin.tx_jvmediaconnector_connector.settings.clearCachePids}
         }
         crop {
             maxHeight = 768

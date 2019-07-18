@@ -1,0 +1,8 @@
+# General
+
+# cat=General/enable/4; type=string; label=UserGroups Uids;description=List Of Usergroup UIDs that may upload Media, separated with colon (,) f.e.: 1,3,16
+uploadUserGroups =
+
+# cat=General/enable/8; type=text; label=Clear Cache PIDs;description=If you use Frontend editing, it will be usefull to add all pages with list View of events (comma separated)
+clearCachePids =
+

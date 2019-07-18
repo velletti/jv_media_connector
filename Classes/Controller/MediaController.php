@@ -75,7 +75,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         $this->settings['pageId']						=  $GLOBALS['TSFE']->id ;
         $this->settings['sys_language_uid']				=  $GLOBALS['TSFE']->sys_language_uid ;
 
-        $this->settings['EmConfiguration']	 			= \JVE\JvEvents\Utility\EmConfigurationUtility::getEmConf();
+        $this->settings['EmConfiguration']	 			= \JVE\JvMediaConnector\Utility\EmConfigurationUtility::getEmConf();
 
         $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
         $this->userUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] )  ;
@@ -542,9 +542,33 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 // got from EM Settings
         $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
         $this->cacheService->clearPageCache( $clearCachePids );
-        $this->addFlashMessage('Media was linked successful. Need to clear Server Cache ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
+        // got from EM Settings
+        $clearCachePids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
+        if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
+            $this->cacheService->clearPageCache( $clearCachePids );
+        }
+        $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
 
-        $this->redirect('list' , null , null, array( "insertId" => $insertId ) ,$this->settings['pids']['list']);
+        $pid = $this->settings['pids']['list'] ;
+        $returnArray = array() ;
+        if( is_array( $sessionData )  && array_key_exists("returnPid" , $sessionData) ) {
+            $pid = $sessionData['returnPid'] ;
+            $returnArray = $sessionData['returnArray'] ;
+        }
+        if ( $pid < 1 ) {
+            $pid =  $GLOBALS['TSFE']->id ;
+        }
+        $uriBuilder = $this->controllerContext->getUriBuilder();
+        $uriBuilder->reset();
+        $uriBuilder->setTargetPageUid( $pid );
+        if( is_array($returnArray)) {
+            $uriBuilder->setArguments($returnArray );
+        }
+        // $uriBuilder->setSection('post_' . $post->getUid()); // anchor
+        $uriBuilder->setCreateAbsoluteUri(true); // complete uir with domain
+        $uri = $uriBuilder->build();
+
+        $this->redirectToUri($uri );
 
     }
 
