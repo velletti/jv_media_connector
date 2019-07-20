@@ -9,7 +9,10 @@
 
 	<script type="text/template" id="media-upload-template-{uniqueId}">
 		<div class="qq-uploader-selector qq-uploader  my-4 py-4">
-
+			<span class="qq-drop-processing-selector qq-drop-processing">
+                  <span>{f:translate(key: 'fineUploader.processingDropFiles')}</span>
+                  <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
+            </span>
 			<div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>
 				<span>{f:translate(key: 'fineUploader.dropFilesHere')}</span>
 			</div>
@@ -22,10 +25,7 @@
 				<span>{f:translate(key: 'fineUploader.dropFilesHere')}</span>
 			</div>
 
-              <span class="qq-drop-processing-selector qq-drop-processing">
-                  <span>{f:translate(key: 'fineUploader.processingDropFiles')}</span>
-                  <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
-              </span>
+
 			<ul id="qq-upload-list-{uniqueId}" class="qq-upload-list-selector qq-upload-list ">
 				<li class="row d-100">
 					<div class="col-6 col-sm-4 col-lg-3">
@@ -93,7 +93,7 @@
 
 			var instance = {
 				id: uploadWidgetIdentifier,
-				onComplete: goToNextStep ,
+
 				settings: {
 					maximumItems: maximumItems,
 					maximumSize: maximumSize,
@@ -119,7 +119,8 @@
 
 				}
 			};
-			MediaUpload.instances.push(instance);
+			MediaUpload.instances.push(instance) ;
+
 
 			function goToNextStep( e ){
 				e.preventDefault;
