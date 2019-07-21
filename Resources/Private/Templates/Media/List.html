@@ -19,15 +19,17 @@
 
 					<div class="card col-6 col-sm-3 p-3">
 						<f:if condition="{media.sysfile.originalResource}">
-							<f:image image="{media.sysfile.originalResource}" maxWidth="240" class="w-100 h-auto" alt="img"></f:image>
+							<f:link.action class="btn btn-success col-5 m-2 px-2" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
+								<f:image image="{media.sysfile.originalResource}" maxWidth="240" class="w-100 h-auto" alt="img"></f:image>
+							</f:link.action>
 						</f:if>
 						<div class="row px-2">
 							<f:link.action class="btn btn-danger col-5 m-2 px-2" pageUid="{settings.pids.manage}" action="delete" arguments="{media : media}">
-								<i class="fa fa-trash"></i> Delete
+								<i class="fa fa-trash"></i> <span class="d-none d-md-inline-block">Delete</span>
 							</f:link.action>
 							<f:if condition="{sessionData}">
 								<f:link.action class="btn btn-success col-5 m-2 px-2" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
-									<i class="fas fa-link"></i> Use
+									<i class="fas fa-link"></i> <span class="d-none d-md-inline-block">Use</span>
 								</f:link.action>
 							</f:if>
 						</div>
