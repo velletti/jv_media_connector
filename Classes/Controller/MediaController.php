@@ -392,6 +392,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
         );
         if( file_exists( $imageUrl)) {
+            $info = getimagesize($imageUrl) ;
             $crop = $this->doCrop($imageUrl, $cropData) ;
             if ($crop['success']) {
                 $response['meta']['debug'] = $crop['debug'] ;
@@ -399,6 +400,8 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
                 if(  $this->createMedia($relativeImagePath , $fileName )) {
                     $response['meta']['success'] = TRUE ;
                     $response['data']['image'] = $relativeImagePath ;
+                    $response['data']['width'] = $info[0] ;
+                    $response['data']['height'] = $info[1] ;
                 }
             }
         }
