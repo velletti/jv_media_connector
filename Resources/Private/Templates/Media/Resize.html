@@ -34,7 +34,11 @@
             if (realHeight > 450) {
               maxH = 450 ;
             } else {
-              maxH = parseInt( realWidth * ratio ) ;
+              maxH = parseInt( realWidth / ratio ) ;
+              if ( maxH > 450 ) {
+                maxH = 450 ;
+                maxH = parseInt( maxW * ratio ) ;
+              }
             }
             jcp = Jcrop.attach(img,{multi:false,w:maxW,h:maxH, aspectRatio:ratio, handles: ['sw','nw','ne','se']});
 
