@@ -22,11 +22,9 @@
 							</f:link.action>
 
 							<div class="row px-2">
-								<f:comment>
 									<f:link.action class="btn btn-danger col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="delete" arguments="{media : media}">
 										<i class="fa fa-trash"></i> <span class="d-none d-md-inline-block">Delete</span>
 									</f:link.action>
-								</f:comment>
 
 								<f:if condition="{sessionData}">
 									<f:link.action class="btn btn-success col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">

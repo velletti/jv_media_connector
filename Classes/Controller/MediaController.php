@@ -380,7 +380,10 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
         $relativeImagePath = substr( $cropData['img'] , 1 , 999) ;
         // toDo : get sanitized Filename without " " or special Chars ..
-        $fileName = "test.jpg" ;
+
+        $fileName =  preg_replace( '/[^a-z0-9.]+/', '-', strtolower( basename($cropData['img']) ) );
+        $md5        = md5($fileName) ;
+        $fileName = substr( $md5 ,0, 4 ) . "_" . $fileName ;
 
         $imageUrl = GeneralUtility::getFileAbsFileName($relativeImagePath);
         unset($cropData['img']) ;
