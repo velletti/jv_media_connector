@@ -18,6 +18,15 @@ namespace JVE\JvMediaConnector\Domain\Model;
  */
 class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
 
+
+    /**
+     * Uid of the referenced sys_file. Needed for extbase to serialize the
+     * reference correctly.
+     *
+     * @var int
+     */
+    protected $uidLocal;
+
     /**
      * @params \TYPO3\CMS\Core\Resource\File $file
      */
@@ -37,6 +46,37 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
      */
     public function setTableLocal( $table) {
         $this->tableLocal = trim($table) ;
+    }
+
+    /**
+     * @params string $field
+     */
+    public function setFieldname( $field) {
+        $this->fieldname = trim($field) ;
+    }
+
+
+    /**
+     * @params string $link
+     */
+    public function setLink( $link) {
+        $this->link = trim($link) ;
+    }
+
+    /**
+     * @params int $uidLocal
+     */
+    public function setUidLocal($uidLocal)
+    {
+        $this->uidLocal = $uidLocal ;
+    }
+
+    /**
+     * @params int $uidForeign
+     */
+    public function setUidForeign($uidForeign)
+    {
+        $this->uidForeign = $uidForeign ;
     }
 
     /**
