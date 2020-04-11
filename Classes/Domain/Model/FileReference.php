@@ -1,6 +1,8 @@
 <?php
 namespace JVE\JvMediaConnector\Domain\Model;
 
+use TYPO3\CMS\Core\Resource\File;
+
 /***
  *
  * This file is part of the "Media Connector" Extension for TYPO3 CMS.
@@ -28,28 +30,28 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     protected $uidLocal;
 
     /**
-     * @params \TYPO3\CMS\Core\Resource\File $file
+     * @param File $file
      */
-    public function setFile(\TYPO3\CMS\Core\Resource\File $file) {
+    public function setFile(File $file) {
         $this->originalFileIdentifier = (int)$file->getUid();
     }
 
     /**
-     * @params string $tablename
+     * @param string $tablename
      */
     public function setTablenames( $tablename) {
         $this->tablenames = trim($tablename) ;
     }
 
     /**
-     * @params string $table
+     * @param string $table
      */
     public function setTableLocal( $table) {
         $this->tableLocal = trim($table) ;
     }
 
     /**
-     * @params string $field
+     * @param string $field
      */
     public function setFieldname( $field) {
         $this->fieldname = trim($field) ;
@@ -57,14 +59,14 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
 
 
     /**
-     * @params string $link
+     * @param string $link
      */
     public function setLink( $link) {
         $this->link = trim($link) ;
     }
 
     /**
-     * @params int $uidLocal
+     * @param int $uidLocal
      */
     public function setUidLocal($uidLocal)
     {
@@ -72,7 +74,7 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     }
 
     /**
-     * @params int $uidForeign
+     * @param int $uidForeign
      */
     public function setUidForeign($uidForeign)
     {
