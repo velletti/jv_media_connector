@@ -29,11 +29,16 @@ class EmConfigurationUtility
     /**
      * Parses the extension settings.
      * @param boolean $asObject
-     * @return array
+     * @return array|\stdClass
      */
     public static function getEmConf($asObject=false)
     {
-		$settings = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['jv_events']);
+        if (class_exists(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class)) {
+            $settings = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class) ->get('jv_events');
+        } else {
+            $settings = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['jv_events']);
+
+        }
 
 		if (!is_array($settings)) {
 			$settings = [];

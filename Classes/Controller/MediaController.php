@@ -38,13 +38,11 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      * persistencemanager
      *
      * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
-     * @inject
      */
     protected $persistenceManager = NULL ;
 
     /**
      * @var \Fab\MediaUpload\Service\UploadFileService
-     * @inject
      */
     protected $uploadFileService;
 
@@ -53,7 +51,6 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      * mediaRepository
      *
      * @var \JVE\JvMediaConnector\Domain\Repository\MediaRepository
-     * @inject
      */
     protected $mediaRepository = null;
 
@@ -61,7 +58,6 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     /**
      *  need session handling to remember Id of Event / location / organizer etc you want to link to
      * @var \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend
-     * @inject
 
      */
     protected $sessionRepository  ;
@@ -73,7 +69,15 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     public function initializeAction()
     {
         $this->settings['pageId']						=  $GLOBALS['TSFE']->id ;
-        $this->settings['sys_language_uid']				=  $GLOBALS['TSFE']->sys_language_uid ;
+
+        if (class_exists(\TYPO3\CMS\Core\Context\Context::class)) {
+            $languageAspect = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Context\Context::class)->getAspect('language') ;
+            // (previously known as TSFE->sys_language_uid)
+            $this->settings['sys_language_uid']	 = $languageAspect->getId() ;
+        } else {
+            $this->settings['sys_language_uid']	 = $GLOBALS['TSFE']->sys_language_uid ;
+        }
+
 
         $this->settings['EmConfiguration']	 			= \JVE\JvMediaConnector\Utility\EmConfigurationUtility::getEmConf();
 
@@ -82,6 +86,11 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         $this->userPath = substr( "00000000" . $this->userUid  , -8 , 8 ) ;
 
 
+
+        $this->mediaRepository = GeneralUtility::makeInstance( "JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository" ) ;
+        $this->sessionRepository = GeneralUtility::makeInstance( "TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend" ) ;
+
+        $this->uploadFileService = GeneralUtility::makeInstance( "Fab\\MediaUpload\\Service\\UploadFileService" ) ;
 
         $this->sessionRepository = GeneralUtility::makeInstance( "TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend" ) ;
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;

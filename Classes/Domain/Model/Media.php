@@ -26,7 +26,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $usecount = 0;
 
     /**
-     * user who had uploaded this image
+     * user who had uploaded this image ToDo Replace @lazy with @TYPO3\CMS\Extbase\Annotation\ORM\Lazy after swith ot LTS 9
      *
      * @var \TYPO3\CMS\Extbase\Domain\Model\FrontendUser
      * @lazy
