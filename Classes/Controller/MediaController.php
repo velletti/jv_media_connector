@@ -87,12 +87,14 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
 
 
-        $this->mediaRepository = GeneralUtility::makeInstance( "JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository" ) ;
-        $this->sessionRepository = GeneralUtility::makeInstance( "TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend" ) ;
+        $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
 
-        $this->uploadFileService = GeneralUtility::makeInstance( "Fab\\MediaUpload\\Service\\UploadFileService" ) ;
+        $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
 
-        $this->sessionRepository = GeneralUtility::makeInstance( "TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend" ) ;
+        $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
+
+        $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
         $this->sessionRepository->initialize( "FE" , $config  ) ;
 

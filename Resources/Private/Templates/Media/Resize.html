@@ -100,7 +100,8 @@
             }
           };
 
-          var url = window.location.pathname + '?' + jQuery.param(data);
+          // var url = window.location.pathname + '?' + jQuery.param(data);
+          var url =  '/de/cropImage.json?' + jQuery.param(data);
           jQuery.post(url, cropData, function (response) {
 
             if (response.meta.success) {

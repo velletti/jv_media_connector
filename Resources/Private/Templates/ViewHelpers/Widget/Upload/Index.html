@@ -94,8 +94,19 @@
 
 			var instance = {
 				id: uploadWidgetIdentifier,
-
+				request: {
+					endpoint: '/de/uploadFile.json'
+				},
+				deleteFile: {
+					endpoint: '/de/deleteFile.json'
+				},
 				settings: {
+					request: {
+						endpoint: '/de/uploadFile.json'
+					},
+					deleteFile: {
+						endpoint: '/de/deleteFile.json'
+					},
 					maximumItems: maximumItems,
 					maximumSize: maximumSize,
 					storage: storage,
