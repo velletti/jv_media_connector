@@ -555,16 +555,20 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
             $insertId = $dbConnectionForSysRef->lastInsertId() ;
             // create Reference from Array
-        }
-// got from EM Settings
-        $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
-        $this->cacheService->clearPageCache( $clearCachePids );
-        // got from EM Settings
-        $clearCachePids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
-        if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
+
+    // got from EM Settings
+            $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
             $this->cacheService->clearPageCache( $clearCachePids );
+            // got from EM Settings
+            $clearCachePids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
+            if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
+                $this->cacheService->clearPageCache( $clearCachePids );
+            }
+            $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
+        } else {
+            $this->addFlashMessage('Got no session or no Media .. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR);
+
         }
-        $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
 
         $pid = $this->settings['pids']['list'] ;
         $returnArray = array() ;
