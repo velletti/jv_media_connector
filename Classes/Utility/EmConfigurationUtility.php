@@ -33,20 +33,9 @@ class EmConfigurationUtility
      */
     public static function getEmConf($asObject=false)
     {
-        if (class_exists(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class)) {
-            $settings = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class) ->get('jv_events');
-        } else {
-            $settings = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['jv_events']);
-
-        }
-
+        $settings = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class) ->get('jv_media_connector');
 		if (!is_array($settings)) {
 			$settings = [];
-		}
-		if( $settings['fontFamiliy ']) {
-			$settings['fontFamiliy '] = str_replace("'" , "" , $settings['fontFamiliy '] ) ;
-			$settings['fontFamiliy '] = str_replace('"' , "" , $settings['fontFamiliy '] ) ;
-			$settings['fontFamiliy '] = str_replace(' ' , "" , $settings['fontFamiliy '] ) ;
 		}
 		if ( $asObject ) {
 			$settingsObj = new \stdClass() ;

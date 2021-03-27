@@ -16,11 +16,15 @@ namespace JVE\JvMediaConnector\Controller;
  * MediaController
  */
 
+use Fab\MediaUpload\Service\UploadFileService;
+use JVE\JvMediaConnector\Domain\Repository\MediaRepository;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
@@ -37,30 +41,59 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     /**
      * persistencemanager
      *
-     * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
+     * @var PersistenceManager
      */
     protected $persistenceManager = NULL ;
 
     /**
-     * @var \Fab\MediaUpload\Service\UploadFileService
+     * @param PersistenceManager $persistenceManager
+     */
+    public function injectPersistenceManager (PersistenceManager $persistenceManager) {
+        $this->persistenceManager = $persistenceManager ;
+    }
+
+
+    /**
+     * @var UploadFileService
      */
     protected $uploadFileService;
 
+    /**
+     * @param UploadFileService $uploadFileService
+     */
+    public function injectUploadFileService (UploadFileService $uploadFileService) {
+        $this->uploadFileService = $uploadFileService ;
+    }
 
     /**
      * mediaRepository
      *
-     * @var \JVE\JvMediaConnector\Domain\Repository\MediaRepository
+     * @var MediaRepository
      */
     protected $mediaRepository = null;
 
+    /**
+     * @param MediaRepository $mediaRepository
+     */
+    public function injectMediaRepository (MediaRepository $mediaRepository) {
+        $this->mediaRepository = $mediaRepository ;
+    }
 
     /**
      *  need session handling to remember Id of Event / location / organizer etc you want to link to
-     * @var \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend
+     * @var DatabaseSessionBackend
 
      */
     protected $sessionRepository  ;
+
+    /**
+     * @param DatabaseSessionBackend $sessionRepository
+     */
+    public function injectSessionRepository (DatabaseSessionBackend $sessionRepository) {
+        $this->sessionRepository = $sessionRepository ;
+    }
+
+
     /**
      * action initialize
      *
@@ -70,14 +103,11 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     {
         $this->settings['pageId']						=  $GLOBALS['TSFE']->id ;
 
-        if (class_exists(\TYPO3\CMS\Core\Context\Context::class)) {
-            $languageAspect = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Context\Context::class)->getAspect('language') ;
-            // (previously known as TSFE->sys_language_uid)
-            $this->settings['sys_language_uid']	 = $languageAspect->getId() ;
-        } else {
-            $this->settings['sys_language_uid']	 = $GLOBALS['TSFE']->sys_language_uid ;
-        }
+        /** @var AspectInterface $languageAspect */
+        $languageAspect = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Context\Context::class)->getAspect('language') ;
 
+        // (previously known as TSFE->sys_language_uid)
+        $this->settings['sys_language_uid'] = $languageAspect->getId() ;
 
         $this->settings['EmConfiguration']	 			= \JVE\JvMediaConnector\Utility\EmConfigurationUtility::getEmConf();
 
@@ -87,13 +117,10 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
 
 
-        $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
-
-        $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
-
-        $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
-
-        $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+        // $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
+        // $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+        // $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
+        // $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
 
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
         $this->sessionRepository->initialize( "FE" , $config  ) ;
@@ -449,7 +476,12 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         /** @var \JVE\JvMediaConnector\Domain\Model\Media $newMedia */
         $newMedia = $this->objectManager->get(\JVE\JvMediaConnector\Domain\Model\Media::class);
 
-        $storage = ResourceFactory::getInstance()->getStorageObject(1);
+        /** @var ResourceFactory $factory */
+        $factory = GeneralUtility::makeInstance(ResourceFactory::class) ;
+
+        // ******* Maybe we need to make Uid of storage (fileadmin/userupload/ configurable !
+        $storage = $factory->getStorageObject(1);
+
         $orgFolder = $storage->getFolder( "user_upload/org/" , true );
         if( !$storage->hasFolder("user_upload/org/" . $this->userPath)) {
             $storage->createFolder( $this->userPath , $orgFolder ) ;
@@ -555,20 +587,16 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
             $insertId = $dbConnectionForSysRef->lastInsertId() ;
             // create Reference from Array
-
-    // got from EM Settings
-            $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
-            $this->cacheService->clearPageCache( $clearCachePids );
-            // got from EM Settings
-            $clearCachePids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
-            if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
-                $this->cacheService->clearPageCache( $clearCachePids );
-            }
-            $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
-        } else {
-            $this->addFlashMessage('Got no session or no Media .. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR);
-
         }
+// got from EM Settings
+        $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
+        $this->cacheService->clearPageCache( $clearCachePids );
+        // got from EM Settings
+        $clearCachePids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
+        if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
+            $this->cacheService->clearPageCache( $clearCachePids );
+        }
+        $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Messaging\AbstractMessage::OK);
 
         $pid = $this->settings['pids']['list'] ;
         $returnArray = array() ;
