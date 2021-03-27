@@ -4,7 +4,7 @@
     "description": "Handle uplaoded Media in Frontend by user",
     "authors": [],
     "require": {
-        "typo3/cms-core": "^8.7.1"
+        "typo3/cms-core": "^9.5 || ^10.4"
     },
     "autoload": {
         "psr-4": {
@@ -19,5 +19,10 @@
     "replace": {
         "jv_media_connector": "self.version",
         "typo3-ter/jv-media-connector": "self.version"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "jv_media_connector"
+        }
     }
 }

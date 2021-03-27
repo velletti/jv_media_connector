@@ -1,6 +1,8 @@
 <?php
 namespace JVE\JvMediaConnector\Domain\Model;
 
+use TYPO3\CMS\Extbase\Annotation as Extbase ;
+
 /***
  *
  * This file is part of the "Media Connector" Extension for TYPO3 CMS.
@@ -26,10 +28,10 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $usecount = 0;
 
     /**
-     * user who had uploaded this image ToDo Replace @lazy with @TYPO3\CMS\Extbase\Annotation\ORM\Lazy after swith ot LTS 9
+     * user who had uploaded this image
      *
      * @var \TYPO3\CMS\Extbase\Domain\Model\FrontendUser
-     * @TYPO3\\CMS\\Extbase\\Annotation\\ORM\\Lazy
+     * @Extbase\ORM\Lazy
      */
     protected $feuser = null;
 
