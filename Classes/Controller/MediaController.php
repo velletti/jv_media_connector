@@ -18,6 +18,7 @@ namespace JVE\JvMediaConnector\Controller;
 
 use Fab\MediaUpload\Service\UploadFileService;
 use JVE\JvMediaConnector\Domain\Repository\MediaRepository;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend;
@@ -70,7 +71,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      *
      * @var MediaRepository
      */
-    protected $mediaRepository = null;
+    protected $mediaRepository ;
 
     /**
      * @param MediaRepository $mediaRepository
@@ -103,7 +104,7 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     {
         $this->settings['pageId']						=  $GLOBALS['TSFE']->id ;
 
-        /** @var AspectInterface $languageAspect */
+        /** @var LanguageAspect $languageAspect */
         $languageAspect = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Context\Context::class)->getAspect('language') ;
 
         // (previously known as TSFE->sys_language_uid)
@@ -117,10 +118,10 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
 
 
-        // $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
-        // $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
-        // $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
-        // $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+         $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
+         $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+         $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
+         $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
 
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
         $this->sessionRepository->initialize( "FE" , $config  ) ;
@@ -136,8 +137,6 @@ class MediaController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     public function listAction()
     {
-
-
 
         $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
         $this->view->assign('medias', $medias);
