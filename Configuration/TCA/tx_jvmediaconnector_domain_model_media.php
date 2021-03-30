@@ -19,9 +19,6 @@ return [
         'searchFields' => 'usecount,feuser,sysfile',
         'iconfile' => 'EXT:jv_media_connector/Resources/Public/Icons/tx_jvmediaconnector_domain_model_media.gif'
     ],
-    'interface' => [
-        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden,  usecount, feuser, sysfile',
-    ],
     'types' => [
         '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, usecount, feuser, sysfile, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
     ],
@@ -45,7 +42,6 @@ return [
         ],
         'l10n_parent' => [
             'displayCond' => 'FIELD:sys_language_uid:>:0',
-            'exclude' => true,
             'label' => 'LLL:EXT:lang/locallang_general.xlf:LGL.l18n_parent',
             'config' => [
                 'type' => 'select',
