@@ -3,6 +3,7 @@ namespace JVE\JvMediaConnector\Domain\Model;
 
 use TYPO3\CMS\Extbase\Annotation as Extbase ;
 
+
 /***
  *
  * This file is part of the "Media Connector" Extension for TYPO3 CMS.
@@ -81,6 +82,9 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      */
     public function getFeuser()
     {
+        if($this->feuser instanceof \TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy ) {
+            return $this->feuser->_loadRealInstance() ;
+        }
         return $this->feuser;
     }
 
