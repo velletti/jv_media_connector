@@ -1,12 +1,12 @@
 <?php
-defined('TYPO3_MODE') || die('Access denied.');
+defined('TYPO3') || die('Access denied.');
 
 call_user_func(
     function()
     {
 
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
-            'JVE.JvMediaConnector',
+            'JvMediaConnector',
             'Connector',
             'Media Connector'
         );

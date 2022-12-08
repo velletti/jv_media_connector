@@ -1,6 +1,9 @@
 <?php
 namespace JVE\JvMediaConnector\Domain\Model;
 
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
 use TYPO3\CMS\Extbase\Annotation as Extbase ;
 
 
@@ -18,7 +21,7 @@ use TYPO3\CMS\Extbase\Annotation as Extbase ;
 /**
  * Connection between Uploaded File and Frontend User
  */
-class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+class Media extends AbstractEntity
 {
 
     /**
@@ -31,14 +34,14 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * user who had uploaded this image
      *
-     * @var \TYPO3\CMS\Extbase\Domain\Model\FrontendUser
+     * @var FrontendUser
      * @Extbase\ORM\Lazy
      */
     protected $feuser = null;
 
     /**
      * $sysfile
-     * @var \JVE\JvMediaConnector\Domain\Model\FileReference
+     * @var FileReference
      */
     protected $sysfile ;
 
@@ -51,7 +54,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      */
     protected function initStorageObjects()
     {
-        $this->sysfile = new \JVE\JvMediaConnector\Domain\Model\FileReference ;
+        $this->sysfile = new FileReference ;
     }
 
     /**
@@ -78,11 +81,11 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Returns the feuser
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Model\FrontendUser $feuser
+     * @return FrontendUser $feuser
      */
     public function getFeuser()
     {
-        if($this->feuser instanceof \TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy ) {
+        if($this->feuser instanceof LazyLoadingProxy ) {
             return $this->feuser->_loadRealInstance() ;
         }
         return $this->feuser;
@@ -91,10 +94,10 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Sets the feuser
      *
-     * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUser $feuser
+     * @param FrontendUser $feuser
      * @return void
      */
-    public function setFeuser(\TYPO3\CMS\Extbase\Domain\Model\FrontendUser $feuser)
+    public function setFeuser(FrontendUser $feuser)
     {
         $this->feuser = $feuser;
     }
@@ -103,7 +106,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * sets  the sysfile
      *
      */
-    public function setSysfile(\JVE\JvMediaConnector\Domain\Model\FileReference $sysfile)
+    public function setSysfile(FileReference $sysfile)
     {
         $this->sysfile = $sysfile ;
     }
@@ -111,7 +114,7 @@ class Media extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Returns the sysfile
      *
-     * @return \JVE\JvMediaConnector\Domain\Model\FileReference $sysfile
+     * @return FileReference $sysfile
      */
     public function getSysfile()
     {

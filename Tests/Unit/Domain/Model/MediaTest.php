@@ -1,22 +1,24 @@
 <?php
 namespace JVE\JvMediaConnector\Tests\Unit\Domain\Model;
 
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use JVE\JvMediaConnector\Domain\Model\Media;
 /**
  * Test case.
  *
  * @author Jörg Velletti <typo3@velletti.de>
  */
-class MediaTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
+class MediaTest extends UnitTestCase
 {
     /**
-     * @var \JVE\JvMediaConnector\Domain\Model\Media
+     * @var Media
      */
     protected $subject = null;
 
     protected function setUp()
     {
         parent::setUp();
-        $this->subject = new \JVE\JvMediaConnector\Domain\Model\Media();
+        $this->subject = new Media();
     }
 
     protected function tearDown()

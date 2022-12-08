@@ -12,14 +12,15 @@
 							<label>Select function</label>
 							<config>
 								<type>select</type>
+<renderType>selectSingle</renderType>
 								<items>
 									<numIndex index="0">
 										<numIndex index="0">List Media</numIndex>
-										<numIndex index="1">Media-&gt;list</numIndex>
+										<numIndex index="1">Media->list</numIndex>
 									</numIndex>
 									<numIndex index="1">
 										<numIndex index="0">Manage Media</numIndex>
-										<numIndex index="1">Media-&gt;new;Media-&gt;confirm;Media-&gt;resize;Media-&gt;create;Media-&gt;delete;Media->createMediaRef</numIndex>
+										<numIndex index="1">Media->new;Media->confirm;Media->resize;Media->create;Media->delete;Media->createMediaRef</numIndex>
 									</numIndex>
 								</items>
 							</config>
