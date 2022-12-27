@@ -1,4 +1,5 @@
-<div>
+<f:format.html>
+<div class="plain">
 
 	<input id="uploaded-files-{property}" type="hidden"
 	       name="tx_mediaupload_pi1[uploadedFiles][{property}]" value="{uploadedFileList}"/>
@@ -55,7 +56,6 @@
 			</ul>
 		</div>
 	</script>
-
 	<script>
 
 		// For not confusing Fluid...
@@ -82,6 +82,7 @@
 		var unsupportedBrowserIos8Safari = "{f:translate(key: 'fineUploader.message.unsupportedBrowserIos8Safari')}";
 
 	</script>
+</f:format.html>
 
 	<f:format.raw>
 		<script>
