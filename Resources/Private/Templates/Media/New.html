@@ -1,19 +1,13 @@
-{namespace mu=Fab\MediaUpload\ViewHelpers}
+{namespace jv=JVE\JvMediaConnector\ViewHelpers}
 
 <html xmlns:f="https://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
   <f:layout name="Default" />
 
   <f:section name="content">
     <h1>Upload New Image</h1>
-
     <f:flashMessages />
 
     <f:render partial="FormErrors" />
 
-
-    <f:form id="qq-upload-form"  noCache="1" action="resize"  name="newMedia" object="{newMedia}"  enctype="multipart/form-data">
-        <mu:widget.upload allowedExtensions="" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
-      <f:form.submit class="btn btn-primary" value="Continue" />
-    </f:form>
   </f:section>
 </html>

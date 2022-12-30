@@ -1,0 +1,12 @@
+
+<f:form id="imgUploadForm" action="new" name="newMedia" pageUid="{settings.pids.manage}" enctype="multipart/form-data"
+        class="w-100 p-3 ">
+  <input name="file" type="file" id="imgUpload"/>
+  <input type="button" value="Continue >>" id="imgUploadSubmit" disabled class="btn btn-success p-2 d-none "/><br><br>
+  Mind.: 240px * 180px , better 600px * 450px or best 1024px * 768px (4 /3 format)<br>
+  <progress id="fileProgress" value="0" max="0" class="w-100 p-2 bg-default"></progress>
+</f:form>
+
+
+<f:asset.script identifier="fileUploader" src="EXT:jv_media_connector/Resources/Public/Javascript/ajaxUpload.js">
+</f:asset.script>

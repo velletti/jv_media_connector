@@ -14,33 +14,35 @@ namespace JVE\JvMediaConnector\Controller;
 /**
  * MediaController
  */
-use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Core\Context\Context;
+use JVE\JvMediaConnector\Domain\Repository\MediaRepository;
 use JVE\JvMediaConnector\Utility\EmConfigurationUtility;
-use Psr\Http\Message\ResponseInterface;
 use JVE\JvMediaConnector\Domain\Model\Media;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
+use JVE\JvMediaConnector\Domain\Model\FileReference;
+use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository;
 use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\DuplicationBehavior;
-use JVE\JvMediaConnector\Domain\Model\FileReference;
 use TYPO3\CMS\Core\Session\Backend\Exception\SessionNotCreatedException;
 use TYPO3\CMS\Core\Session\Backend\Exception\SessionNotFoundException;
-use Fab\MediaUpload\Service\UploadFileService;
-use JVE\JvMediaConnector\Domain\Repository\MediaRepository;
 use TYPO3\CMS\Core\Context\LanguageAspect;
-use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Service\CacheService;
 
 class MediaController extends ActionController
 {
+
+    const UPLOAD_FOLDER = 'typo3temp/MediaUpload/';
+
     /**
      * @var integer
      */
@@ -59,6 +61,20 @@ class MediaController extends ActionController
     protected $persistenceManager = NULL ;
 
     /**
+     * CacheService
+     */
+
+    public $cacheService ;
+
+    /**
+     * @param CacheService $cacheService
+     * @return void
+     */
+    public function injectCacheService(CacheService $cacheService) {
+        $this->cacheService = $cacheService ;
+    }
+
+    /**
      * @param PersistenceManager $persistenceManager
      */
     public function injectPersistenceManager (PersistenceManager $persistenceManager) {
@@ -66,17 +82,6 @@ class MediaController extends ActionController
     }
 
 
-    /**
-     * @var UploadFileService
-     */
-    protected $uploadFileService;
-
-    /**
-     * @param UploadFileService $uploadFileService
-     */
-    public function injectUploadFileService (UploadFileService $uploadFileService) {
-        $this->uploadFileService = $uploadFileService ;
-    }
 
     /**
      * mediaRepository
@@ -91,6 +96,8 @@ class MediaController extends ActionController
     public function injectMediaRepository (MediaRepository $mediaRepository) {
         $this->mediaRepository = $mediaRepository ;
     }
+
+
 
     /**
      *  need session handling to remember Id of Event / location / organizer etc you want to link to
@@ -132,7 +139,6 @@ class MediaController extends ActionController
 
          $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
          $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
-         $this->uploadFileService = $this->objectManager->get('Fab\\MediaUpload\\Service\\UploadFileService');
          $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
 
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
@@ -166,7 +172,46 @@ class MediaController extends ActionController
         if ( $this->userUid < 1 ) {
             $this->redirect('list' , null , null, null ,$this->settings['pids']['list']);
         }
+
+        // Todo Add Security check, file types and size
+        // $json['output'] =  $this->createMedia($_FILES['file']['tmp_name'] , $_FILES['file']['name'] , true ) ;
+
+        if(file_exists( "./" .  $this->getFileName() )) {
+            unlink( "./" .  $this->getFileName() ) ;
+        }
+        $ext = $this->getFileExt($_FILES['file']['tmp_name']) ;
+        $rnd = time() ;
+        if ( $ext ) {
+            if (  move_uploaded_file( $_FILES['file']['tmp_name'] ,  $this->getFileName() . "_" . $rnd . "." . $ext )) {
+                $this->returnJson( ['success' => true , "ext" => $ext , "rnd" => $rnd  ] ) ;
+            }
+        }
+
+        $this->returnJson( ['success' => false ] ) ;
+
     }
+
+    public function getFileName(  )  {
+        return self::UPLOAD_FOLDER . $this->userPath  ;
+    }
+
+    public function getFileExt( $file )  {
+        $imageInfo = getimagesize($file )  ;
+
+        if ( is_array( $imageInfo )) {
+            switch ($imageInfo['2']) {
+
+                case '1':
+                    return "gif" ;
+                case '2':
+                    return "jpg" ;
+                case '3':
+                    return "png" ;
+            }
+        }
+        return false ;
+    }
+
 
 
 
@@ -273,6 +318,22 @@ class MediaController extends ActionController
      */
     public function resizeAction(): ResponseInterface
     {
+        if( $this->userUid > 0 ) {
+
+            if( $this->request->hasArgument("ext")  ) {
+                $ext = substr( $this->request->getArgument("ext") , 0 , 3 ) ;
+                $rnd = intval( $this->request->getArgument("rnd") ) ;
+                $ext =  str_replace( "." , "" , $ext) ;
+                if ( strlen( $ext ) == 3  ) {
+                    // $image = $this->mediaRepository->findByUserAllpages($this->userUid , true ,$uid )->getFirst() ;
+                    $this->view->assign("property" , "sysfile") ;
+                    $this->view->assign("tempFile" ,  $this->getFileName() . "_" . $rnd . "." . $ext  ) ;
+                }
+
+            }
+        }
+
+
         return $this->htmlResponse();
     }
     /**
@@ -449,7 +510,9 @@ class MediaController extends ActionController
             $crop = $this->doCrop($imageUrl, $cropData) ;
             if ($crop['success']) {
                 $response['meta']['debug'] = $crop['debug'] ;
-                $response['meta']['message'] = "upload_cretefile_error" ;
+                $response['meta']['message'] = "upload_createfile_error" ;
+                $response['meta']['relativeImagePath'] = $relativeImagePath ;
+                $response['meta']['fileName'] = $fileName ;
                 if(  $this->createMedia($relativeImagePath , $fileName )) {
                     $response['meta']['success'] = TRUE ;
                     $response['data']['image'] = $relativeImagePath ;
@@ -458,6 +521,10 @@ class MediaController extends ActionController
                 }
             }
         }
+        $this->returnJson($response) ;
+    }
+
+    private function returnJson( $response) {
         $jsonOutput = json_encode($response);
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
@@ -468,15 +535,14 @@ class MediaController extends ActionController
         header('Content-Transfer-Encoding: 8bit');
         echo $jsonOutput;
         exit();
-
     }
 
     /**
      * action create
      *
-     * @return boolean
+     * @return boolean|int
      */
-    protected function createMedia($relativeImagePath , $fileName )
+    protected function createMedia($relativeImagePath , $fileName , $returnMedia=false )
     {
 
         /** @var FrontendUserRepository $userRepository */
@@ -486,13 +552,15 @@ class MediaController extends ActionController
         $user = $userRepository->findByUid($this->userUid) ;
 
         /** @var Media $newMedia */
-        $newMedia = $this->objectManager->get(Media::class);
+        $newMedia = GeneralUtility::makeInstance(Media::class);
 
         /** @var ResourceFactory $factory */
         $factory = GeneralUtility::makeInstance(ResourceFactory::class) ;
 
         // ******* Maybe we need to make Uid of storage (fileadmin/userupload/ configurable !
-        $storage = $factory->getStorageObject(1);
+        $storageObjectId = 1 ;
+
+        $storage = $factory->getStorageObject( $storageObjectId );
 
         $orgFolder = $storage->getFolder( "user_upload/org/" , true );
         if( !$storage->hasFolder("user_upload/org/" . $this->userPath)) {
@@ -505,31 +573,61 @@ class MediaController extends ActionController
             $relativeImagePath ,
             $targetFolder,
             $fileName,
-            DuplicationBehavior::RENAME
+            DuplicationBehavior::REPLACE
         );
 
         # Note: Use method `addUploadedFile` instead of `addFile` if file is uploaded
         # via a regular "input" control instead of the upload widget (fine uploader plugin)
         # $file = $storage->addUploadedFile()
-        $this->persistenceManager->persistAll() ;
+
         /** @var FileReference $fileReference */
-        $fileReference = $this->objectManager->get(FileReference::class);
+        $fileReference = GeneralUtility::makeInstance(FileReference::class);
+
         if( is_array($this->settings ) && is_array($this->settings['pids'] ) &&  array_key_exists('storagePid' , $this->settings['pids'])) {
             $fileReference->setPid($this->settings['pids']['storagePid']);
+        } else {
+            $fileReference->setPid( 35 ) ;
         }
         $fileReference->setFile($file);
         $fileReference->setTablenames("tx_jvmediaconnector_domain_model_media");
         $fileReference->setTableLocal("sys_file");
 
-        $this->persistenceManager->persistAll() ;
 
-        $newMedia->setSysfile($fileReference );
+        $newMedia->setSysfile( $fileReference );
         $newMedia->setFeuser( $user ) ;
+        $newMedia->setHidden( 0 ) ;
         $newMedia->setPid( $fileReference->getPid() ) ;
 
         $this->mediaRepository->add($newMedia);
         $this->persistenceManager->persistAll() ;
+
+
+
+
+
+
+
         if ( $newMedia->getUid() > 0 ) {
+            /** @var ConnectionPool $connectionPool */
+            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+
+            /** @var \TYPO3\CMS\Core\Database\Connection $dbConnectionForSysRef */
+            $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
+
+            /** @var \TYPO3\CMS\Core\Database\Query\QueryBuilder $queryBuilder */
+            $queryBuilder = $dbConnectionForSysRef->createQueryBuilder();
+
+            $affectedRow = $queryBuilder
+                ->update('sys_file_reference')
+                ->set(    'uid_local' , (int)$file->getUid() )
+                ->set(    'hidden' , 0 )
+                ->set(    'tablenames' , 'tx_jvmediaconnector_domain_model_media' )
+                ->set(    'table_local' , 'sys_file' )
+                ->where( $queryBuilder->expr()->eq('uid_foreign' , $newMedia->getUid() ))
+                ->execute();
+            if( $returnMedia ) {
+                return  $newMedia->getUid() ;
+            }
             return true ;
         };
         return false ;

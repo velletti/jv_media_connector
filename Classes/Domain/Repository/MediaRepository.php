@@ -25,7 +25,7 @@ class MediaRepository extends Repository
         'crdate' => QueryInterface::ORDER_DESCENDING
     );
 
-    public function findByUserAllpages($userUid = 0 ,  $ignoreEnableFields = FALSE )
+    public function findByUserAllpages($userUid = 0 ,  $ignoreEnableFields = FALSE , $uid = 0 )
     {
         $query = $this->createQuery();
         $querySettings = $query->getQuerySettings() ;
@@ -33,8 +33,19 @@ class MediaRepository extends Repository
         $querySettings->setRespectSysLanguage(FALSE);
         $querySettings->setIgnoreEnableFields($ignoreEnableFields) ;
         $query->setQuerySettings($querySettings) ;
+        if ( $uid > 0 ) {
+            $query->matching(
+                $query->logicalAnd(
+                    $query->equals('uid', $uid ),
+                    $query->equals('feuser.uid', $userUid )
 
-        $query->matching( $query->equals('feuser.uid', $userUid ) ) ;
+                )
+
+            ) ;
+        } else {
+            $query->matching( $query->equals('feuser.uid', $userUid ) ) ;
+        }
+
         $res = $query->execute() ;
 
         // new way to debug typo3 db queries
@@ -44,4 +55,4 @@ class MediaRepository extends Repository
         // die;
         return $res ;
     }
-    }
+}

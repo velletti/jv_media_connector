@@ -45,6 +45,11 @@ class Media extends AbstractEntity
      */
     protected $sysfile ;
 
+    /**
+     * hidden when uploaded but not cropped
+     * @var int
+     */
+    protected $hidden ;
 
 
     /**
@@ -120,6 +125,26 @@ class Media extends AbstractEntity
     {
         return $this->sysfile;
     }
+
+    /**
+     * @return int
+     */
+    public function getHidden(): int
+    {
+        return $this->hidden;
+    }
+
+    /**
+     * @param int $hidden
+     */
+    public function setHidden(int $hidden): void
+    {
+        $this->hidden = $hidden;
+    }
+
+
+
+
 
 
 }

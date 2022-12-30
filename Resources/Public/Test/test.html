@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Upload</title>
+    <script src="/typo3conf/ext/jve_template/Resources/Public/Js/jquery-3.5.0.min.js?1672160786"></script>
+</head>
+<body>
+
+
+    <form id="imgUploadForm" data-action="/typo3conf/ext/jv_media_connector/Resources/Public/Test/upload.php" enctype="multipart/form-data" style="padding: 20px ; height: 100px; width:450px; background: #dddddd;">
+        <input name="file" type="file" id="imgUpload"/>
+        <input type="button" value="Upload" id="imgUploadSubmit" disabled /><br><br>
+        Mind.: 240px * 180px , better 600px * 450px or best 1024px * 768px (4 /3 format)<br>
+        <progress id="fileProgress" value="0" max="0" style="width: 100%; height:25px;"></progress>
+    </form>
+
+    <div id="imgResize">
+
+    </div>
+    <script>
+
+        $('#imgUpload').on('change', function() {
+            if ( checkUploadFile( this.files[0] ) ) {
+                $('#imgUploadSubmit').attr("disabled" , false ).on('click', function () {
+                    imgUploadFile() ;
+                });
+            }
+        });
+
+        function checkUploadFile(file) {
+            let size = ( file.size / ( 1024 * 1024) ) ;
+            if ( size  > 16 ) {
+                alert( 'Max upload size is 16 MB, file has: ' + size.toFixed(2) + "Mb" );
+                return false ;
+            } else {
+                let allowed = ['image/jpeg', 'image/png', 'image/gif'];
+                if (allowed.indexOf(file.type) < 0) {
+                    alert("Filetype : " + file.type + " not allowed! (only Images) ");
+                    return false;
+                }
+            }
+            return true ;
+        }
+
+        function imgUploadFile() {
+            $.ajax({
+                // Your server script to process the upload
+                url: $('#imgUploadForm').data('action'),
+                type: 'POST',
+
+                // Form data
+                data: new FormData($('#imgUploadForm')[0]),
+
+                // Tell jQuery not to process data or worry about content-type
+                // You *must* include these options!
+                cache: false,
+                contentType: false,
+                processData: false,
+
+                beforeSend: function() {
+                    $('#imgUploadSubmit').attr("disabled" , true ) ;
+                } ,
+
+                // Custom XMLHttpRequest
+                xhr: function () {
+                    var myXhr = $.ajaxSettings.xhr();
+                    if (myXhr.upload) {
+                        // For handling the progress of the upload
+                        myXhr.upload.addEventListener('progress', function (e) {
+                            if (e.lengthComputable) {
+                                $('#fileProgress').attr({
+                                    value: e.loaded,
+                                    max: e.total,
+                                });
+                            }
+                        }, false);
+                    }
+                    return myXhr;
+                },
+                success: function(response ) {
+                    // nothing. in case of success page should redirect to resize
+                },
+                error: function() {
+                    alert( "Sorry, an undefined error occured!") ;
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>

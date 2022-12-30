@@ -1,27 +1,24 @@
-<f:format.html>
+<f:format.raw>
 <div class="plain">
-
 	<input id="uploaded-files-{property}" type="hidden"
 	       name="tx_mediaupload_pi1[uploadedFiles][{property}]" value="{uploadedFileList}"/>
-
 	<div id="jquery-wrapped-fine-uploader-{widgetIdentifier}" class="alert alert-secondary my-4 py-4">
-
-	</div>
+</div>
 
 	<script type="text/template" id="media-upload-template-{uniqueId}">
 		<div class="qq-uploader-selector qq-uploader  my-4 py-4">
 			<span class="qq-drop-processing-selector qq-drop-processing">
-                  <span>{f:translate(key: 'fineUploader.processingDropFiles')}</span>
+                  <span>{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.processingDropFiles')}</span>
                   <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
             </span>
 			<div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>
-				<span>{f:translate(key: 'fineUploader.dropFilesHere')}</span>
+				<span>{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.dropFilesHere')}</span>
 			</div>
 			<div class="qq-upload-button-selector qq-upload-button">
-				<div>{f:translate(key: 'fineUploader.uploadFile')}</div>
+				<div>{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.uploadFile')}</div>
 			</div>
 			<div class="small">
-				(max <b>{maximumSizeLabel}</b> {f:translate(key: sizeUnit)} and only <b>{allowedExtensions}</b> files allowed)
+				(max <b><f:format.bytes decimals="1">{maximumSize}</f:format.bytes></b> {f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:sizeUnit')} and only <b>{allowedExtensions}</b> files allowed)
 				or
 				<span>{f:translate(key: 'fineUploader.dropFilesHere')}</span><br>
 				Mind.: 240px * 180px , better 600px * 450px or best 1024px * 768px (4 /3 format)
@@ -65,24 +62,25 @@
 		var storage= '{storage}';
 		var uniqueId= '{uniqueId}';
 		var property= '{property}';
-		var allowedExtensions= ['{allowedExtensions->f:format.raw()}'];
+		var allowedExtensionsNotWorking= '{allowedExtensions->f:format.raw()}';
+		var allowedExtensions= ['jpg','png','jpeg','gif'];
 
-		var typeError = "{f:translate(key: 'fineUploader.message.errorType')}";
-		var sizeError = "{f:translate(key: 'fineUploader.message.sizeError')}";
-		var minSizeError = "{f:translate(key: 'fineUploader.message.minSizeError')}";
-		var emptyError = "{f:translate(key: 'fineUploader.message.emptyError')}";
-		var noFilesError = "{f:translate(key: 'fineUploader.message.noFilesError')}";
-		var tooManyItemsError = "{f:translate(key: 'fineUploader.message.tooManyItemsError')}";
-		var maxHeightImageError = "{f:translate(key: 'fineUploader.message.maxHeightImageError')}";
-		var maxWidthImageError = "{f:translate(key: 'fineUploader.message.maxWidthImageError')}";
-		var minHeightImageError = "{f:translate(key: 'fineUploader.message.minHeightImageError')}";
-		var minWidthImageError = "{f:translate(key: 'fineUploader.message.minWidthImageError')}";
-		var retryFailTooManyItems = "{f:translate(key: 'fineUploader.message.retryFailTooManyItems')}";
-		var onLeave = "{f:translate(key: 'fineUploader.message.onLeave')}";
-		var unsupportedBrowserIos8Safari = "{f:translate(key: 'fineUploader.message.unsupportedBrowserIos8Safari')}";
+		var typeError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.errorType')}";
+		var sizeError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.sizeError')}";
+		var minSizeError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.minSizeError')}";
+		var emptyError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.emptyError')}";
+		var noFilesError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.noFilesError')}";
+		var tooManyItemsError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.tooManyItemsError')}";
+		var maxHeightImageError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.maxHeightImageError')}";
+		var maxWidthImageError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.maxWidthImageError')}";
+		var minHeightImageError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.minHeightImageError')}";
+		var minWidthImageError = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.minWidthImageError')}";
+		var retryFailTooManyItems = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.retryFailTooManyItems')}";
+		var onLeave = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.onLeave')}";
+		var unsupportedBrowserIos8Safari = "{f:translate(key: 'LLL:EXT:media_upload/Resources/Private/Language/locallang.xlf:fineUploader.message.unsupportedBrowserIos8Safari')}";
 
 	</script>
-</f:format.html>
+</f:format.raw>
 
 	<f:format.raw>
 		<script>

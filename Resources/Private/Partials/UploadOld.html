@@ -1,0 +1,6 @@
+{namespace jv=JVE\JvMediaConnector\ViewHelpers}
+
+<f:form  id="qq-upload-form" action="resize" noCache="1" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
+  <jv:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16777216" sizeUnit="Mb" property="sysfile"/>
+
+</f:form>

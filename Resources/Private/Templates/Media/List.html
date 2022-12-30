@@ -1,5 +1,5 @@
 {namespace mu=Fab\MediaUpload\ViewHelpers}
-
+{namespace jv=JVE\JvMediaConnector\ViewHelpers}
 <html xmlns:f="https://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 	<f:layout name="Default" />
 
@@ -8,10 +8,9 @@
 
 		<div class="tx_jvmediaconnector" >
 
-			<f:form  id="qq-upload-form" action="resize" noCache="1" enctype="multipart/form-data" pageUid="{settings.pids.manage}" name="newMedia" object="{newMedia}">
-				<mu:widget.upload allowedExtensions="jpg,png,gif,jpeg" storage="1" maximumItems="1" maximumSize="16" sizeUnit="Mo" property="sysfile"/>
+			<f:render partial="Upload" arguments="{_all}"/>
 
-			</f:form>
+
 			<div class="row tx_jvmediaconnector-list">
 				<f:for each="{medias}" as="media">
 					<f:if condition="{media.sysfile.originalResource}">
