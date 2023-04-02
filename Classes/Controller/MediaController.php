@@ -19,6 +19,7 @@ use JVE\JvMediaConnector\Utility\EmConfigurationUtility;
 use JVE\JvMediaConnector\Domain\Model\Media;
 use JVE\JvMediaConnector\Domain\Model\FileReference;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository;
 use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
@@ -172,12 +173,14 @@ class MediaController extends ActionController
         if ( $this->userUid < 1 ) {
             $this->redirect('list' , null , null, null ,$this->settings['pids']['list']);
         }
-
+        if (! is_dir(Environment::getPublicPath() . '/' . self::UPLOAD_FOLDER)) {
+            mkdir ( Environment::getPublicPath() . '/' . self::UPLOAD_FOLDER ) ;
+        }
         // Todo Add Security check, file types and size
         // $json['output'] =  $this->createMedia($_FILES['file']['tmp_name'] , $_FILES['file']['name'] , true ) ;
 
-        if(file_exists( "./" .  $this->getFileName() )) {
-            unlink( "./" .  $this->getFileName() ) ;
+        if(file_exists( Environment::getPublicPath() . '/' . $this->getFileName() )) {
+            unlink( Environment::getPublicPath() . '/' .  $this->getFileName() ) ;
         }
         $ext = $this->getFileExt($_FILES['file']['tmp_name']) ;
         $rnd = time() ;
@@ -562,6 +565,10 @@ class MediaController extends ActionController
 
         $storage = $factory->getStorageObject( $storageObjectId );
 
+        if( !$storage->hasFolder("user_upload/org" )) {
+            $orgFolder = $storage->getFolder( "user_upload/" , true );
+            $storage->createFolder( 'org' , $orgFolder ) ;
+        }
         $orgFolder = $storage->getFolder( "user_upload/org/" , true );
         if( !$storage->hasFolder("user_upload/org/" . $this->userPath)) {
             $storage->createFolder( $this->userPath , $orgFolder ) ;
