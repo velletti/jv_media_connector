@@ -17,7 +17,7 @@
         }
     },
     "replace": {
-        "jv_media_connector": "self.version",
+        "jv_media_connector": "self.version"
     },
     "extra": {
         "typo3/cms": {
