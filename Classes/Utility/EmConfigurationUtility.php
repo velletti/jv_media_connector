@@ -30,11 +30,12 @@ class EmConfigurationUtility
     /**
      * Parses the extension settings.
      * @param boolean $asObject
+     * @param string $extension
      * @return array|\stdClass
      */
-    public static function getEmConf($asObject=false)
+    public static function getEmConf($asObject=false, $extension='jv_media_connector')
     {
-        $settings = GeneralUtility::makeInstance(ExtensionConfiguration::class) ->get('jv_media_connector');
+        $settings = GeneralUtility::makeInstance(ExtensionConfiguration::class) ->get($extension);
 		if (!is_array($settings)) {
 			$settings = [];
 		}

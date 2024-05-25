@@ -9,11 +9,11 @@ call_user_func(
             'JvMediaConnector',
             'Connector',
             [
-                \JVE\JvMediaConnector\Controller\MediaController::class => 'list, new, confirm, resize, create, delete, createMediaRef'
+                \JVE\JvMediaConnector\Controller\MediaController::class => 'list, new, confirm, resize, create, delete, createMediaRef, cropImage'
             ],
             // non-cacheable actions
             [
-                \JVE\JvMediaConnector\Controller\MediaController::class => 'list, new, confirm, resize, create, delete , createMediaRef'
+                \JVE\JvMediaConnector\Controller\MediaController::class => 'list, new, confirm, resize, create, delete , createMediaRef, cropImage'
             ]
         );
 

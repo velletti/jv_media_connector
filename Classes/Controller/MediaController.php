@@ -1,6 +1,5 @@
 <?php
 namespace JVE\JvMediaConnector\Controller;
-
 /***
  *
  * This file is part of the "Media Connector" Extension for TYPO3 CMS.
@@ -20,9 +19,10 @@ use JVE\JvMediaConnector\Domain\Model\Media;
 use JVE\JvMediaConnector\Domain\Model\FileReference;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
-use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository;
-use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use JVelletti\JvEvents\Domain\Repository\FrontendUserRepository;
+use JVelletti\JvEvents\Domain\Model\FrontendUser;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -132,15 +132,15 @@ class MediaController extends ActionController
 
         $this->settings['EmConfiguration']	 			= EmConfigurationUtility::getEmConf();
 
-        $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
+        $this->persistenceManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
         $this->userUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] )  ;
         $this->userPath = substr( "00000000" . $this->userUid  , -8 , 8 ) ;
 
 
 
-         $this->mediaRepository = $this->objectManager->get('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
-         $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
-         $this->sessionRepository = $this->objectManager->get('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+         $this->mediaRepository = GeneralUtility::makeInstance('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
+         $this->sessionRepository = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+         $this->sessionRepository = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
 
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
         $this->sessionRepository->initialize( "FE" , $config  ) ;
@@ -521,8 +521,11 @@ class MediaController extends ActionController
                     $response['data']['image'] = $relativeImagePath ;
                     $response['data']['width'] = $info[0] ;
                     $response['data']['height'] = $info[1] ;
+                    $response['meta']['message'] = "upload_done" ;
                 }
             }
+        } else {
+            $response['meta']['message'] = "upload_noFile_at_url " . $imageUrl;
         }
         $this->returnJson($response) ;
     }
@@ -549,9 +552,9 @@ class MediaController extends ActionController
     {
 
         /** @var FrontendUserRepository $userRepository */
-        $userRepository  = $this->objectManager->get(FrontendUserRepository::class);
+        $userRepository  = GeneralUtility::makeInstance(FrontendUserRepository::class);
 
-        /** @var FrontendUser $user */
+        /** @var \JVelletti\JvEvents\Domain\Model\FrontendUser $user */
         $user = $userRepository->findByUid($this->userUid) ;
 
         /** @var Media $newMedia */
@@ -646,9 +649,9 @@ class MediaController extends ActionController
     /**
      * action createMediaRef Has no views ... redirects back
      *
-     * @return void
      */
-    public function createMediaRefAction() {
+    public function createMediaRefAction(): ResponseInterface
+    {
 
         $sessionData = $this->getSessionData() ;
 
@@ -710,7 +713,7 @@ class MediaController extends ActionController
         $this->cacheService->clearPageCache( $clearCachePids );
         // got from EM Settings
         $clearCachePids = GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
-        if( is_array($clearCachePids) && count( $clearCachePids) > 0 ) {
+        if( is_array($clearCachePids) && count( $clearCachePids) > 0 && intval($clearCachePids[0]) > 0 ) {
             $this->cacheService->clearPageCache( $clearCachePids );
         }
         $this->addFlashMessage('Media was linked successful. ' , '', AbstractMessage::OK);
@@ -724,7 +727,7 @@ class MediaController extends ActionController
         if ( $pid < 1 ) {
             $pid =  $GLOBALS['TSFE']->id ;
         }
-        $uriBuilder = $this->controllerContext->getUriBuilder();
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class) ;
         $uriBuilder->reset();
         $uriBuilder->setTargetPageUid( $pid );
         if( is_array($returnArray)) {
@@ -734,7 +737,7 @@ class MediaController extends ActionController
         $uriBuilder->setCreateAbsoluteUri(true); // complete uir with domain
         $uri = $uriBuilder->build();
 
-        $this->redirectToUri($uri );
+        return $this->redirectToUri($uri );
 
     }
 

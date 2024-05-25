@@ -2,7 +2,7 @@
 namespace JVE\JvMediaConnector\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
-use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use JVelletti\JvEvents\Domain\Model\FrontendUser;
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
 use TYPO3\CMS\Extbase\Annotation as Extbase ;
 

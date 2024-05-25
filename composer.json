@@ -1,7 +1,7 @@
 {
     "name": "jve/jv-media-connector",
     "type": "typo3-cms-extension",
-    "description": "Handle uplaoded Media in Frontend by user",
+    "description": "Handle uploaded Media in Frontend by user. needed in jv events",
     "authors": [],
     "require": {
         "typo3/cms-core": "^12.4"
