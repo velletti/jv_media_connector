@@ -1,5 +1,7 @@
 {namespace mu=Fab\MediaUpload\ViewHelpers}
 {namespace jv=JVE\JvMediaConnector\ViewHelpers}
+{namespace jve=JVelletti\JvEvents\ViewHelpers}
+
 <html xmlns:f="https://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
 	<f:layout name="Default" />
 
@@ -21,13 +23,13 @@
 									<f:if condition="{sessionData}">
 										<f:then>
 											<f:link.action class="btn btn-success w-100 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
-												<f:image image="{media.sysfile.originalResource}" maxWidth="360" class="w-100 h-auto" alt="img"></f:image>
+												<jve:image src="{media.sysfile.uid}" treatIdAsReference="true" maxWidth="360" class="w-100 h-auto" alt="img"></jve:image>
 											</f:link.action>
 										</f:then>
 										<f:else>
-									<span class="btn btn-success w-100 px-1">
-										<f:image image="{media.sysfile.originalResource}" maxWidth="360" class="w-100 h-auto" alt="img"></f:image>
-									</span>
+											<span class="btn btn-success w-100 px-1">
+												<jve:image src="{media.sysfile.uid}" treatIdAsReference="true" maxWidth="360" class="w-100 h-auto" alt="img"></jve:image>
+											</span>
 										</f:else>
 									</f:if>
 
