@@ -133,7 +133,14 @@ class MediaController extends ActionController
         $this->settings['EmConfiguration']	 			= EmConfigurationUtility::getEmConf();
 
         $this->persistenceManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
-        $this->userUid = intval( $GLOBALS['TSFE']->fe_user->user['uid'] )  ;
+        /** @var \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication $frontendUser */
+        $frontendUser = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user');
+        $feUser = ($frontendUser->user ?? null ) ;
+        if( is_array($feUser) && array_key_exists('uid' , $feUser) ) {
+            $this->userUid = intval( $feUser['uid'] )  ;
+        } else {
+            $this->userUid = 0 ;
+        }
         $this->userPath = substr( "00000000" . $this->userUid  , -8 , 8 ) ;
 
 
@@ -306,7 +313,7 @@ class MediaController extends ActionController
 
             $this->addFlashMessage('The object was NOT deleted. User "' .  $this->userUid . '"" has NO Access to this image!' . $media->getUid(), '', AbstractMessage::WARNING);
         }
-        $this->redirect('list' , null , null, array( "random" => time() ) ,$this->settings['pids']['list']);
+        return $this->redirect('list' , null , null, array( "random" => time() ) ,$this->settings['pids']['list']);
     }
 
 

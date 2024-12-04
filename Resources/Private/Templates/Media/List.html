@@ -8,33 +8,72 @@
 
 		<div class="tx_jvmediaconnector" >
 
-			<f:render partial="Upload" arguments="{_all}"/>
+			<f:if condition="feuser">
+				<f:then>
+					<f:render partial="Upload" arguments="{_all}"/>
 
 
-			<div class="row tx_jvmediaconnector-list">
-				<f:for each="{medias}" as="media">
-					<f:if condition="{media.sysfile.originalResource}">
+					<div class="row tx_jvmediaconnector-list">
+						<f:for each="{medias}" as="media">
+							<f:if condition="{media.sysfile.originalResource}">
 
-						<div class="card col-6 col-sm-4 col-lg-3 p-3">
-							<f:link.action class="btn btn-success w-100 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
-								<f:image image="{media.sysfile.originalResource}" maxWidth="360" class="w-100 h-auto" alt="img"></f:image>
-							</f:link.action>
+								<div class="card col-6 col-sm-4 col-lg-3 p-3">
+									<f:if condition="{sessionData}">
+										<f:then>
+											<f:link.action class="btn btn-success w-100 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
+												<f:image image="{media.sysfile.originalResource}" maxWidth="360" class="w-100 h-auto" alt="img"></f:image>
+											</f:link.action>
+										</f:then>
+										<f:else>
+									<span class="btn btn-success w-100 px-1">
+										<f:image image="{media.sysfile.originalResource}" maxWidth="360" class="w-100 h-auto" alt="img"></f:image>
+									</span>
+										</f:else>
+									</f:if>
 
-							<div class="row px-2">
-									<f:link.action class="btn btn-danger col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="delete" arguments="{media : media}">
-										<i class="fa fa-trash"></i> <span class="d-none d-md-inline-block">Delete</span>
-									</f:link.action>
 
-								<f:if condition="{sessionData}">
-									<f:link.action class="btn btn-success col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
-										<i class="fas fa-link"></i> <span class="d-none d-md-inline-block">Use</span>
-									</f:link.action>
-								</f:if>
-							</div>
+									<div class="row px-2">
+										<f:link.action class="btn btn-danger col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="delete" arguments="{media : media}">
+											<i class="fa fa-trash"></i> <span class="d-none d-md-inline-block">Delete</span>
+										</f:link.action>
+
+										<f:if condition="{sessionData}">
+											<f:link.action class="btn btn-success col-4 m-2 px-1" pageUid="{settings.pids.manage}" action="createMediaRef" arguments="{media : media.sysFile.originalResource.uid , reference : sessionData}">
+												<i class="fas fa-link"></i> <span class="d-none d-md-inline-block">Use</span>
+											</f:link.action>
+										</f:if>
+									</div>
+								</div>
+							</f:if>
+						</f:for>
+					</div>
+					<div class="row mt-3 p-0">
+						<f:if condition="{sessionData}">
+							<f:then>
+									<div class="alert alert-secondary small ml-0 w-100">
+										session data found
+									</div>
+
+							</f:then>
+							<f:else>
+
+								<div class="alert alert-secondary ml-0 w-100">
+									{f:translate(key: 'info.no_session_data', extensionName: 'jv_media_connector' ,default: 'No session data for link images')}
+								</div>
+							</f:else>
+
+						</f:if>
+					</div>
+				</f:then>
+				<f:else>
+					<div class="row mt-3 p-0">
+						<div class="alert alert-danger ml-0 w-100">
+							{f:translate(key: 'error.no_feuser', extensionName: 'jv_media_connector' ,default: 'Sorry, No frontend user found')}
 						</div>
-					</f:if>
-				</f:for>
-			</div>
+					</div>
+				</f:else>
+			</f:if>
+
 		</div>
 	</f:section>
 </html>
