@@ -162,7 +162,6 @@ class MediaController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
-
         $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
         $this->view->assign('medias', $medias);
         $this->view->assign('sessionData', $this->getSessionData() );
@@ -300,7 +299,6 @@ class MediaController extends ActionController
                     $affectedRows = $queryBuilder
                         ->delete('sys_file_reference')
                         ->where(
-                            $queryBuilder->expr()->eq('table_local', $queryBuilder->createNamedParameter('sys_file')),
                             $queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter( $fileUid ))
                         )
                         ->execute();
@@ -591,7 +589,12 @@ class MediaController extends ActionController
             $fileName,
             DuplicationBehavior::REPLACE
         );
+        // Persits to have a valid UID
+        $this->persistenceManager->persistAll() ;
 
+        if( (int)$file->getUid() == 0 ) {
+            return false ;
+        }
         # Note: Use method `addUploadedFile` instead of `addFile` if file is uploaded
         # via a regular "input" control instead of the upload widget (fine uploader plugin)
         # $file = $storage->addUploadedFile()
@@ -606,8 +609,6 @@ class MediaController extends ActionController
         }
         $fileReference->setFile($file);
         $fileReference->setTablenames("tx_jvmediaconnector_domain_model_media");
-        $fileReference->setTableLocal("sys_file");
-
 
         $newMedia->setSysfile( $fileReference );
         $newMedia->setFeuser( $user ) ;
@@ -623,7 +624,7 @@ class MediaController extends ActionController
 
 
 
-        if ( $newMedia->getUid() > 0 ) {
+        if ( $newMedia->getUid() > 0 && $file->getUid() > 0 ) {
             /** @var ConnectionPool $connectionPool */
             $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
 
@@ -638,7 +639,6 @@ class MediaController extends ActionController
                 ->set(    'uid_local' , (int)$file->getUid() )
                 ->set(    'hidden' , 0 )
                 ->set(    'tablenames' , 'tx_jvmediaconnector_domain_model_media' )
-                ->set(    'table_local' , 'sys_file' )
                 ->where( $queryBuilder->expr()->eq('uid_foreign' , $newMedia->getUid() ))
                 ->execute();
             if( $returnMedia ) {
@@ -690,7 +690,6 @@ class MediaController extends ActionController
                 $affectedRows = $queryBuilder
                     ->delete('sys_file_reference')
                     ->where(
-                        $queryBuilder->expr()->eq('table_local', $queryBuilder->createNamedParameter('sys_file')),
                         $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter($sessionData['table'] )),
                         $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($sessionData['id'] )),
                         $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($sessionData['fieldname'] ))
@@ -703,7 +702,6 @@ class MediaController extends ActionController
                 ->insert('sys_file_reference')
                 ->values([
                     'uid_local' => intval( $mediaRow['uid_local']) ,
-                    'table_local' => 'sys_file'  ,
                     'uid_foreign' => intval( $sessionData['id'] ) ,
                     'tablenames' => $sessionData['table']  ,
                     'fieldname' => $sessionData['fieldname']  ,

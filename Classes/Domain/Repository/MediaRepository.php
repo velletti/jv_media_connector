@@ -43,16 +43,13 @@ class MediaRepository extends Repository
 
             ) ;
         } else {
-            $query->matching( $query->equals('feuser.uid', $userUid ) ) ;
+            $query->matching(
+                $query->logicalAnd(
+                    $query->equals('feuser.uid', $userUid ) )
+                );
         }
 
         $res = $query->execute() ;
-
-        // new way to debug typo3 db queries
-        // $queryParser = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Storage\Typo3DbQueryParser::class);
-        //  var_dump($queryParser->convertQueryToDoctrineQueryBuilder($query)->getSQL());
-        // var_dump($queryParser->convertQueryToDoctrineQueryBuilder($query)->getParameters()) ;
-        // die;
         return $res ;
     }
 }
