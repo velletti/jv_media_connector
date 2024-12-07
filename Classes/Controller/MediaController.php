@@ -13,6 +13,8 @@ namespace JVE\JvMediaConnector\Controller;
 /**
  * MediaController
  */
+
+use Doctrine\DBAL\Driver\Exception;
 use JVE\JvMediaConnector\Domain\Repository\MediaRepository;
 use JVE\JvMediaConnector\Utility\EmConfigurationUtility;
 use JVE\JvMediaConnector\Domain\Model\Media;
@@ -162,7 +164,12 @@ class MediaController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
-        $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
+        try {
+            $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
+        } catch ( \Exception $e) {
+            $this->addFlashMessage('Error: ' . $e->getMessage(), '', AbstractMessage::ERROR);
+        }
+
         $this->view->assign('medias', $medias);
         $this->view->assign('sessionData', $this->getSessionData() );
         return $this->htmlResponse();
