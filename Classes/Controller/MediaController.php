@@ -362,7 +362,23 @@ class MediaController extends ActionController
         if ( $cropData['dw'] == 0 ) { return array( "success" => false , "debug" => "ERR-02: No display dimensions")  ;}
 
         $debug['imageInfo'] = $imageInfo ;
+
+
+        // center in Middle
+        if (  $cropData['y'] < 0 ) {
+            $cropData['y'] =  (string)intval($cropData['y'] /  2 );
+            $cropData['y2'] = (string) (intval($cropData['y2']) - intval($cropData['y'])) ;
+            $debug['cropDataDeltaAbove'] = $cropData['y'] ;
+        }
+        if (  (int)$cropData['y'] == 0 && (int)$cropData['y2']  >  (int)$cropData['dh']) {
+            $delta = ( (int)$cropData['y2'] - (int)$cropData['dh'] ) /  2 ;
+
+            $cropData['y'] =  (string)intval($cropData['y'] - $delta );
+            $cropData['y2'] =  (string)intval($cropData['y2'] - $delta );
+            $debug['cropDataDeltaBelow'] = $delta ;
+        }
         $debug['cropData'] = $cropData ;
+
 
 
         if( is_array($this->settings ) && is_array($this->settings['crop'] )) {
@@ -413,26 +429,69 @@ class MediaController extends ActionController
         }
 
 
-
-
-
         $sourceImage = $this->readImage($image , $imageInfo );
 
         $tempImage = imagecreatetruecolor($dest_w, $dest_h);
-        $debug["command"] = array (
-            'dest_x' => $dest_x ,
-            'dest_y' => $dest_y ,
-            'src_x' => $src_x  ,
-            'src_y' => $src_y ,
-            'dest_w' => $dest_w ,
-            'dest_h' => $dest_h ,
-            'src_w' => $src_w ,
-            'src_h' => $src_h ,
-        ) ;
 
-        imagecopyresampled(     $tempImage, $sourceImage, $dest_x, $dest_y, $src_x , $src_y , $dest_w, $dest_h, $src_w , $src_h);
+        // 1. Hellgraue Hintergrundfarbe definieren und Canvas füllen
+        $backgroundColor = imagecolorallocate($tempImage, 236, 236, 236); // #ECECEC
+        imagefill($tempImage, 0, 0, $backgroundColor);
 
-        $result =  $this->writeImage($tempImage, $image, $quality , $imageInfo);
+        // 2. Werte für Clipping vorbereiten
+        $render_src_x  = $src_x;
+        $render_src_y  = $src_y;
+        $render_src_w  = $src_w;
+        $render_src_h  = $src_h;
+
+        $render_dest_x = $dest_x;
+        $render_dest_y = $dest_y;
+        $render_dest_w = $dest_w;
+        $render_dest_h = $dest_h;
+
+        // Oben abgeschnitten (y < 0) -> Versatz nach unten verschieben
+        if ($render_src_y < 0) {
+            $overlap_top    = abs($render_src_y);
+            $render_dest_y += ($overlap_top / $render_src_h) * $render_dest_h;
+            $render_dest_h -= ($overlap_top / $render_src_h) * $render_dest_h;
+            $render_src_h  -= $overlap_top;
+            $render_src_y   = 0;
+        }
+
+        // Unten abgeschnitten (ragt über Quellbildhöhe hinaus)
+        if (($render_src_y + $render_src_h) > $imageInfo[1]) {
+            $overlap_bottom = ($render_src_y + $render_src_h) - $imageInfo[1];
+            $render_dest_h -= ($overlap_bottom / $render_src_h) * $render_dest_h;
+            $render_src_h  -= $overlap_bottom;
+        }
+
+        // Links abgeschnitten (x < 0)
+        if ($render_src_x < 0) {
+            $overlap_left   = abs($render_src_x);
+            $render_dest_x += ($overlap_left / $render_src_w) * $render_dest_w;
+            $render_dest_w -= ($overlap_left / $render_src_w) * $render_dest_w;
+            $render_src_w  -= $overlap_left;
+            $render_src_x   = 0;
+        }
+
+        // Rechts abgeschnitten (ragt über Quellbildbreite hinaus)
+        if (($render_src_x + $render_src_w) > $imageInfo[0]) {
+            $overlap_right  = ($render_src_x + $render_src_w) - $imageInfo[0];
+            $render_dest_w -= ($overlap_right / $render_src_w) * $render_dest_w;
+            $render_src_w  -= $overlap_right;
+        }
+
+        // 3. Nur den gültigen Bildausschnitt auf die hellgraue Canvas kopieren
+        if ($render_src_w > 0 && $render_src_h > 0 && $render_dest_w > 0 && $render_dest_h > 0) {
+            imagecopyresampled(
+                $tempImage, $sourceImage,
+                (int)$render_dest_x, (int)$render_dest_y,
+                (int)$render_src_x,  (int)$render_src_y,
+                (int)$render_dest_w, (int)$render_dest_h,
+                (int)$render_src_w,  (int)$render_src_h
+            );
+        }
+
+        $result = $this->writeImage($tempImage, $image, $quality , $imageInfo);
  // var_dump($debug) ;
 // die;
         return array( "success" => $result , 'debug' => $debug ) ;
