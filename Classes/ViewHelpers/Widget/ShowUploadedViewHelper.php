@@ -25,7 +25,7 @@ class ShowUploadedViewHelper extends AbstractViewHelper
     /**
      * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         $this->registerArgument(
             'property',
@@ -64,9 +64,7 @@ class ShowUploadedViewHelper extends AbstractViewHelper
         /** @var StandaloneView $view */
         $view = GeneralUtility::makeInstance(StandaloneView::class);
 
-        $view->setTemplatePathAndFilename(
-            'EXT:media_upload/Resources/Private/Templates/ViewHelpers/Widget/ShowUploaded/Index.html',
-        );
+        $view->getRenderingContext()->getTemplatePaths()->setTemplatePathAndFilename('EXT:media_upload/Resources/Private/Templates/ViewHelpers/Widget/ShowUploaded/Index.html');
         $view->assignMultiple($arguments);
         return $view->render();
     }

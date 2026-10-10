@@ -1,0 +1,16 @@
+mod {
+            wizards.newContentElement.wizardItems.plugins {
+                elements {
+                    connector {
+                        iconIdentifier = jv_media_connector-plugin-connector
+                        title = LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jv_media_connector_connector.name
+                        description = LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jv_media_connector_connector.description
+                        tt_content_defValues {
+                            CType = list
+                            list_type = jvmediaconnector_connector
+                        }
+                    }
+                }
+                show = *
+            }
+       }

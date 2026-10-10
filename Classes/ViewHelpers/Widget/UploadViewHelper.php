@@ -22,7 +22,7 @@ class UploadViewHelper extends AbstractViewHelper
 
     protected $escapeOutput = false ;
 
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         $this->registerArgument(
             'allowedExtensions',
@@ -94,9 +94,7 @@ class UploadViewHelper extends AbstractViewHelper
         /** @var StandaloneView $view */
         $view = GeneralUtility::makeInstance(StandaloneView::class);
 
-        $view->setTemplatePathAndFilename(
-            'EXT:jv_media_connector/Resources/Private/Templates/ViewHelpers/Widget/Upload/Index.html',
-        );
+        $view->getRenderingContext()->getTemplatePaths()->setTemplatePathAndFilename('EXT:jv_media_connector/Resources/Private/Templates/ViewHelpers/Widget/Upload/Index.html');
         $view->assignMultiple($arguments);
         return $view->render();
     }
@@ -117,7 +115,8 @@ class UploadViewHelper extends AbstractViewHelper
      */
     public static function getUploadedFileList($property = ''): string
     {
-        $parameters = GeneralUtility::_GPmerged('tx_mediaupload_upload');
+        $parameters = $GLOBALS['TYPO3_REQUEST']->getQueryParams()['tx_mediaupload_upload'];
+        \TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($parameters, $GLOBALS['TYPO3_REQUEST']->getParsedBody()['tx_mediaupload_upload']);
         return empty($parameters['uploadedFiles'][$property])
             ? ''
             : $parameters['uploadedFiles'][$property];

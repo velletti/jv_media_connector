@@ -29,7 +29,7 @@ class MediaTest extends UnitTestCase
     /**
      * @test
      */
-    public function getUserpathReturnsInitialValueForString()
+    public function getUserpathReturnsInitialValueForString(): void
     {
         self::assertSame(
             '',
@@ -40,7 +40,7 @@ class MediaTest extends UnitTestCase
     /**
      * @test
      */
-    public function setUserpathForStringSetsUserpath()
+    public function setUserpathForStringSetsUserpath(): void
     {
         $this->subject->setUserpath('Conceived at T3CON10');
 
@@ -54,7 +54,7 @@ class MediaTest extends UnitTestCase
     /**
      * @test
      */
-    public function getUsecountReturnsInitialValueForInt()
+    public function getUsecountReturnsInitialValueForInt(): void
     {
         self::assertSame(
             0,
@@ -65,7 +65,7 @@ class MediaTest extends UnitTestCase
     /**
      * @test
      */
-    public function setUsecountForIntSetsUsecount()
+    public function setUsecountForIntSetsUsecount(): void
     {
         $this->subject->setUsecount(12);
 

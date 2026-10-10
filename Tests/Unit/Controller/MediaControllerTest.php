@@ -36,7 +36,7 @@ class MediaControllerTest extends UnitTestCase
     /**
      * @test
      */
-    public function listActionFetchesAllMediasFromRepositoryAndAssignsThemToView()
+    public function listActionFetchesAllMediasFromRepositoryAndAssignsThemToView(): void
     {
 
         $allMedias = $this->getMockBuilder(ObjectStorage::class)
@@ -60,7 +60,7 @@ class MediaControllerTest extends UnitTestCase
     /**
      * @test
      */
-    public function createActionAddsTheGivenMediaToMediaRepository()
+    public function createActionAddsTheGivenMediaToMediaRepository(): void
     {
         $media = new Media();
 
@@ -78,7 +78,7 @@ class MediaControllerTest extends UnitTestCase
     /**
      * @test
      */
-    public function deleteActionRemovesTheGivenMediaFromMediaRepository()
+    public function deleteActionRemovesTheGivenMediaFromMediaRepository(): void
     {
         $media = new Media();
 

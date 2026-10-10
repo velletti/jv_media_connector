@@ -32,28 +32,28 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     /**
      * @param File $file
      */
-    public function setFile(File $file) {
+    public function setFile(File $file): void {
         $this->originalFileIdentifier = (int)$file->getUid();
     }
 
     /**
      * @param string $tablename
      */
-    public function setTablenames( $tablename) {
+    public function setTablenames( $tablename): void {
         $this->tablenames = trim($tablename) ;
     }
 
     /**
      * @param string $table
      */
-    public function setTableLocal( $table) {
+    public function setTableLocal( $table): void {
         $this->tableLocal = trim($table) ;
     }
 
     /**
      * @param string $field
      */
-    public function setFieldname( $field) {
+    public function setFieldname( $field): void {
         $this->fieldname = trim($field) ;
     }
 
@@ -61,14 +61,14 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     /**
      * @param string $link
      */
-    public function setLink( $link) {
+    public function setLink( $link): void {
         $this->link = trim($link) ;
     }
 
     /**
      * @param int $uidLocal
      */
-    public function setUidLocal($uidLocal)
+    public function setUidLocal($uidLocal): void
     {
         $this->uidLocal = $uidLocal ;
     }
@@ -76,7 +76,7 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     /**
      * @param int $uidForeign
      */
-    public function setUidForeign($uidForeign)
+    public function setUidForeign($uidForeign): void
     {
         $this->uidForeign = $uidForeign ;
     }

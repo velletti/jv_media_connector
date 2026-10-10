@@ -35,8 +35,8 @@ class Media extends AbstractEntity
      * user who had uploaded this image
      *
      * @var FrontendUser
-     * @Extbase\ORM\Lazy
      */
+    #[Extbase\ORM\Lazy]
     protected $feuser = null;
 
     /**
@@ -78,7 +78,7 @@ class Media extends AbstractEntity
      * @param int $usecount
      * @return void
      */
-    public function setUsecount($usecount)
+    public function setUsecount($usecount): void
     {
         $this->usecount = $usecount;
     }
@@ -102,7 +102,7 @@ class Media extends AbstractEntity
      * @param FrontendUser $feuser
      * @return void
      */
-    public function setFeuser(FrontendUser $feuser)
+    public function setFeuser(FrontendUser $feuser): void
     {
         $this->feuser = $feuser;
     }
@@ -111,7 +111,7 @@ class Media extends AbstractEntity
      * sets  the sysfile
      *
      */
-    public function setSysfile(FileReference $sysfile)
+    public function setSysfile(FileReference $sysfile): void
     {
         $this->sysfile = $sysfile ;
     }

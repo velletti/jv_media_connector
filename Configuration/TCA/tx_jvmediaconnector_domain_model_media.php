@@ -5,7 +5,6 @@ return [
         'label' => 'sysfile',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
-        'cruser_id' => 'cruser_id',
         'versioningWS' => true,
         'languageField' => 'sys_language_uid',
         'transOrigPointerField' => 'l10n_parent',
@@ -36,7 +35,7 @@ return [
                 'renderType' => 'selectSingle',
                 'default' => 0,
                 'items' => [
-                    ['', 0],
+                    ['label' => '', 'value' => 0],
                 ],
                 'foreign_table' => 'tx_jvmediaconnector_domain_model_media',
                 'foreign_table_where' => 'AND tx_jvmediaconnector_domain_model_media.pid=###CURRENT_PID### AND tx_jvmediaconnector_domain_model_media.sys_language_uid IN (-1,0)',
@@ -74,10 +73,8 @@ return [
             ],
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.starttime',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
+                'type' => 'datetime',
                 'size' => 13,
-                'eval' => 'datetime',
                 'default' => 0,
             ],
         ],
@@ -88,10 +85,8 @@ return [
             ],
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
+                'type' => 'datetime',
                 'size' => 13,
-                'eval' => 'datetime',
                 'default' => 0,
                 'range' => [
                     'upper' => mktime(0, 0, 0, 1, 1, 2038)
@@ -103,9 +98,8 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media.usecount',
             'config' => [
-                'type' => 'input',
-                'size' => 4,
-                'eval' => 'int'
+                'type' => 'number',
+                'size' => 4
             ]
         ],
         'feuser' => [
@@ -128,17 +122,17 @@ return [
         'sysfile' => [
             'exclude' => true,
             'label' => 'LLL:EXT:jv_media_connector/Resources/Private/Language/locallang_db.xlf:tx_jvmediaconnector_domain_model_media.sysfile',
-            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
-                'sysfile',
-                array(
-                    'appearance' => array(
-                        'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:images.addFileReference'
-                    ),
-                    'minitems' => 0,
-                    'maxitems' => 1,
+            'config' => [
+                // TODO: Important! Verify that the fieldname value in foreign table either matches the column name
+                // or is set properly in the following TCA, see https://docs.typo3.org/permalink/t3tca:confval-inline-foreign-match-fields
+                'type' => 'file',
+                'allowed' => $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'],
+                'appearance' => array(
+                    'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:images.addFileReference'
                 ),
-                $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext']
-            ),
+                'minitems' => 0,
+                'maxitems' => 1,
+            ],
 
         ],
     

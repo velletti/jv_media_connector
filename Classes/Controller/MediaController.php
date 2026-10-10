@@ -68,20 +68,19 @@ class MediaController extends ActionController
      */
 
     public $cacheService ;
-
-    /**
-     * @param CacheService $cacheService
-     * @return void
-     */
-    public function injectCacheService(CacheService $cacheService) {
-        $this->cacheService = $cacheService ;
-    }
-
-    /**
-     * @param PersistenceManager $persistenceManager
-     */
-    public function injectPersistenceManager (PersistenceManager $persistenceManager) {
-        $this->persistenceManager = $persistenceManager ;
+    public function __construct(private readonly \TYPO3\CMS\Core\Context\Context                 $context,
+                                \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager        $persistenceManager,
+                                private readonly \TYPO3\CMS\Core\Database\ConnectionPool         $connectionPool,
+                                private readonly \TYPO3\CMS\Core\Resource\ResourceFactory        $resourceFactory,
+                                protected readonly \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder $uriBuilder,
+                                \TYPO3\CMS\Extbase\Service\CacheService                          $cacheService,
+                                \JVE\JvMediaConnector\Domain\Repository\MediaRepository          $mediaRepository, 
+                                \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend           $sessionRepository)
+    {
+        $this->persistenceManager = $persistenceManager;
+        $this->cacheService = $cacheService;
+        $this->mediaRepository = $mediaRepository;
+        $this->sessionRepository = $sessionRepository;
     }
 
 
@@ -93,13 +92,6 @@ class MediaController extends ActionController
      */
     protected $mediaRepository ;
 
-    /**
-     * @param MediaRepository $mediaRepository
-     */
-    public function injectMediaRepository (MediaRepository $mediaRepository) {
-        $this->mediaRepository = $mediaRepository ;
-    }
-
 
 
     /**
@@ -109,32 +101,25 @@ class MediaController extends ActionController
      */
     protected $sessionRepository  ;
 
-    /**
-     * @param DatabaseSessionBackend $sessionRepository
-     */
-    public function injectSessionRepository (DatabaseSessionBackend $sessionRepository) {
-        $this->sessionRepository = $sessionRepository ;
-    }
-
 
     /**
      * action initialize
      *
      * @return void
      */
-    public function initializeAction()
+    public function initializeAction(): void
     {
-        $this->settings['pageId']						=  $GLOBALS['TSFE']->id ;
+        $this->settings['pageId']						=  $this->request->getAttribute('frontend.page.information')->getId() ;
 
         /** @var LanguageAspect $languageAspect */
-        $languageAspect = GeneralUtility::makeInstance(Context::class)->getAspect('language') ;
+        $languageAspect = $this->context->getAspect('language') ;
 
         // (previously known as TSFE->sys_language_uid)
         $this->settings['sys_language_uid'] = $languageAspect->getId() ;
 
         $this->settings['EmConfiguration']	 			= EmConfigurationUtility::getEmConf();
 
-        $this->persistenceManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
+        $this->persistenceManager = $this->persistenceManager;
         /** @var \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication $frontendUser */
         $frontendUser = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user');
         $feUser = ($frontendUser->user ?? null ) ;
@@ -147,8 +132,8 @@ class MediaController extends ActionController
 
 
 
-         $this->mediaRepository = GeneralUtility::makeInstance('JVE\\JvMediaConnector\\Domain\\Repository\\MediaRepository');
-         $this->sessionRepository = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Session\\Backend\\DatabaseSessionBackend');
+         $this->mediaRepository = GeneralUtility::makeInstance(\JVE\JvMediaConnector\Domain\Repository\MediaRepository::class);
+         $this->sessionRepository = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend::class);
 
         $config = $GLOBALS['TYPO3_CONF_VARS']['SYS']['session']['FE']['options'] ;
         $this->sessionRepository->initialize( "FE" , $config  ) ;
@@ -167,7 +152,7 @@ class MediaController extends ActionController
         try {
             $medias = $this->mediaRepository->findByUserAllpages( $this->userUid );
         } catch ( \Exception $e) {
-            $this->addFlashMessage('Error: ' . $e->getMessage(), '', AbstractMessage::ERROR);
+            $this->addFlashMessage('Error: ' . $e->getMessage(), '', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
         }
 
         $this->view->assign('medias', $medias);
@@ -178,12 +163,12 @@ class MediaController extends ActionController
     /**
      * action new
      *
-     * @return void
+     * @return \Psr\Http\Message\ResponseInterface
      */
     public function newAction()
     {
         if ( $this->userUid < 1 ) {
-            $this->redirect('list' , null , null, null ,$this->settings['pids']['list']);
+            return $this->redirect('list' , null , null, null ,$this->settings['pids']['list']);
         }
         if (! is_dir(Environment::getPublicPath() . '/' . self::UPLOAD_FOLDER)) {
             mkdir ( Environment::getPublicPath() . '/' . self::UPLOAD_FOLDER ) ;
@@ -246,7 +231,7 @@ class MediaController extends ActionController
             if( is_array( $sessionData ) ) {
 
                 /** @var ConnectionPool $connectionPool */
-                $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+                $connectionPool = $this->connectionPool;
 
                 /** @var Connection $dbConnectionForSysRef */
                 $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
@@ -257,11 +242,7 @@ class MediaController extends ActionController
                 // ****************** 1. get the sys_file UID   ********************
                 $affectedRows = $queryBuilder
                     ->select("uid", "uid_local" , "uid_foreign")
-                    ->from('sys_file_reference')
-                    ->where(
-                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($media->getSysfile()->getUid() ))
-                    )
-                    ->execute();
+                    ->from('sys_file_reference')->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($media->getSysfile()->getUid() )))->executeQuery();
                 $mediaRow = $affectedRows->fetch();
 
                 // ****************** 2. get the sys_file record   ********************
@@ -275,11 +256,7 @@ class MediaController extends ActionController
 
                     $fileQuery = $queryBuilderFile
                         ->select("*" )
-                        ->from('sys_file')
-                        ->where(
-                            $queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid  ))
-                        )
-                        ->execute();
+                        ->from('sys_file')->where($queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid  )))->executeQuery();
                     $fileRow = $fileQuery->fetch();
 
                     // ****************** 3. Delete File from  sys_file record   ********************
@@ -293,22 +270,13 @@ class MediaController extends ActionController
                         }
                         // ****************** 4. Delete row from  sys_file record   ********************
                         $queryBuilderFile
-                            ->delete('sys_file')
-                            ->where(
-                                $queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid )),
-                                $queryBuilderFile->expr()->eq('storage', $queryBuilderFile->createNamedParameter( 1 ))
-                            )
-                            ->execute();
+                            ->delete('sys_file')->where($queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid )), $queryBuilderFile->expr()->eq('storage', $queryBuilderFile->createNamedParameter( 1 )))->executeStatement();
                     }
                 }
                 if ( $fileUid > 0 ) {
                     // remove existing Relations to this media  UID Local may change. Igore that relation may not exists
                     $affectedRows = $queryBuilder
-                        ->delete('sys_file_reference')
-                        ->where(
-                            $queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter( $fileUid ))
-                        )
-                        ->execute();
+                        ->delete('sys_file_reference')->where($queryBuilder->expr()->eq('uid_local', $queryBuilder->createNamedParameter( $fileUid )))->executeStatement();
                 }
 
             }
@@ -316,7 +284,7 @@ class MediaController extends ActionController
             $this->mediaRepository->remove($media);
         } else {
 
-            $this->addFlashMessage('The object was NOT deleted. User "' .  $this->userUid . '"" has NO Access to this image!' . $media->getUid(), '', AbstractMessage::WARNING);
+            $this->addFlashMessage('The object was NOT deleted. User "' .  $this->userUid . '"" has NO Access to this image!' . $media->getUid(), '', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::WARNING);
         }
         return $this->redirect('list' , null , null, array( "random" => time() ) ,$this->settings['pids']['list']);
     }
@@ -556,8 +524,8 @@ class MediaController extends ActionController
     /**
      * cropImage Action, called via ajax
      */
-    public function cropImageAction() {
-        $cropData = GeneralUtility::_POST();
+    public function cropImageAction(): \Psr\Http\Message\ResponseInterface {
+        $cropData = $this->request->getParsedBody();
         if( $this->request->hasArgument("cropData")) {
             $cropData = $this->request->getArgument("cropData") ;
         }
@@ -598,9 +566,10 @@ class MediaController extends ActionController
             $response['meta']['message'] = "upload_noFile_at_url " . $imageUrl;
         }
         $this->returnJson($response) ;
+        return $this->htmlResponse();
     }
 
-    private function returnJson( $response) {
+    private function returnJson( $response): void {
         $jsonOutput = json_encode($response);
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
@@ -631,7 +600,7 @@ class MediaController extends ActionController
         $newMedia = GeneralUtility::makeInstance(Media::class);
 
         /** @var ResourceFactory $factory */
-        $factory = GeneralUtility::makeInstance(ResourceFactory::class) ;
+        $factory = $this->resourceFactory ;
 
         // ******* Maybe we need to make Uid of storage (fileadmin/userupload/ configurable !
         $storageObjectId = 1 ;
@@ -692,7 +661,7 @@ class MediaController extends ActionController
 
         if ( $newMedia->getUid() > 0 && $file->getUid() > 0 ) {
             /** @var ConnectionPool $connectionPool */
-            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+            $connectionPool = $this->connectionPool;
 
             /** @var \TYPO3\CMS\Core\Database\Connection $dbConnectionForSysRef */
             $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
@@ -704,9 +673,7 @@ class MediaController extends ActionController
                 ->update('sys_file_reference')
                 ->set(    'uid_local' , (int)$file->getUid() )
                 ->set(    'hidden' , 0 )
-                ->set(    'tablenames' , 'tx_jvmediaconnector_domain_model_media' )
-                ->where( $queryBuilder->expr()->eq('uid_foreign' , $newMedia->getUid() ))
-                ->execute();
+                ->set(    'tablenames' , 'tx_jvmediaconnector_domain_model_media' )->where($queryBuilder->expr()->eq('uid_foreign' , $newMedia->getUid() ))->executeStatement();
             if( $returnMedia ) {
                 return  $newMedia->getUid() ;
             }
@@ -730,7 +697,7 @@ class MediaController extends ActionController
         if( is_array( $sessionData )  && $this->request->hasArgument('media')  ) {
 
             /** @var ConnectionPool $connectionPool */
-            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+            $connectionPool = $this->connectionPool;
 
             /** @var Connection $dbConnectionForSysRef */
             $dbConnectionForSysRef = $connectionPool->getConnectionForTable('sys_file_reference');
@@ -743,50 +710,38 @@ class MediaController extends ActionController
 
             $affectedRows = $queryBuilder
                 ->select( "uid","uid_local" )
-                ->from('sys_file_reference')
-                ->where(
-                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter( $media ))
-                )
-                ->execute();
+                ->from('sys_file_reference')->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter( $media )))->executeQuery();
 
             $mediaRow = $affectedRows->fetch() ;
 
             if ( $sessionData['maxRelations'] < 2 ) {
                 // remove existing Relations to this media  UID Local may change. Igore that relation may not exists
                 $affectedRows = $queryBuilder
-                    ->delete('sys_file_reference')
-                    ->where(
-                        $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter($sessionData['table'] )),
-                        $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($sessionData['id'] )),
-                        $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($sessionData['fieldname'] ))
-                    )
-                    ->execute();
+                    ->delete('sys_file_reference')->where($queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter($sessionData['table'] )), $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($sessionData['id'] )), $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($sessionData['fieldname'] )))->executeStatement();
             }
 
 
             $affectedRows = $queryBuilder
-                ->insert('sys_file_reference')
-                ->values([
-                    'uid_local' => intval( $mediaRow['uid_local']) ,
-                    'uid_foreign' => intval( $sessionData['id'] ) ,
-                    'tablenames' => $sessionData['table']  ,
-                    'fieldname' => $sessionData['fieldname']  ,
+                ->insert('sys_file_reference')->values([
+                'uid_local' => intval( $mediaRow['uid_local']) ,
+                'uid_foreign' => intval( $sessionData['id'] ) ,
+                'tablenames' => $sessionData['table']  ,
+                'fieldname' => $sessionData['fieldname']  ,
 
-                ])
-                ->execute();
+            ])->executeStatement();
 
             $insertId = $dbConnectionForSysRef->lastInsertId() ;
             // create Reference from Array
         }
 // got from EM Settings
-        $clearCachePids = array( $GLOBALS['TSFE']->id ) ;
+        $clearCachePids = array( $this->request->getAttribute('frontend.page.information')->getId() ) ;
         $this->cacheService->clearPageCache( $clearCachePids );
         // got from EM Settings
         $clearCachePids = GeneralUtility::trimExplode("," , $this->settings['EmConfiguration']['clearCachePids']) ;
         if( is_array($clearCachePids) && count( $clearCachePids) > 0 && intval($clearCachePids[0]) > 0 ) {
             $this->cacheService->clearPageCache( $clearCachePids );
         }
-        $this->addFlashMessage('Media was linked successful. ' , '', AbstractMessage::OK);
+        $this->addFlashMessage('Media was linked successful. ' , '', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::OK);
 
         $pid = $this->settings['pids']['list'] ;
         $returnArray = array() ;
@@ -795,9 +750,9 @@ class MediaController extends ActionController
             $returnArray = $sessionData['returnArray'] ;
         }
         if ( $pid < 1 ) {
-            $pid =  $GLOBALS['TSFE']->id ;
+            $pid =  $this->request->getAttribute('frontend.page.information')->getId() ;
         }
-        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class) ;
+        $uriBuilder = $this->uriBuilder ;
         $uriBuilder->reset();
         $uriBuilder->setTargetPageUid( $pid );
         if( is_array($returnArray)) {
