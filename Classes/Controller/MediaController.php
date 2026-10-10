@@ -72,7 +72,7 @@ class MediaController extends ActionController
                                 \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager        $persistenceManager,
                                 private readonly \TYPO3\CMS\Core\Database\ConnectionPool         $connectionPool,
                                 private readonly \TYPO3\CMS\Core\Resource\ResourceFactory        $resourceFactory,
-                                protected readonly \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder $uriBuilder,
+                                protected \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder         $uriBuilder,
                                 \TYPO3\CMS\Extbase\Service\CacheService                          $cacheService,
                                 \JVE\JvMediaConnector\Domain\Repository\MediaRepository          $mediaRepository,
                                 \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend           $sessionRepository)

@@ -25,9 +25,9 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
      * Uid of the referenced sys_file. Needed for extbase to serialize the
      * reference correctly.
      *
-     * @var int
+     * @var ?int
      */
-    protected $uidLocal;
+    protected ?int $uidLocal= null;
 
     /**
      * @param File $file
@@ -68,7 +68,7 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     /**
      * @param int $uidLocal
      */
-    public function setUidLocal($uidLocal): void
+    public function setUidLocal(?int $uidLocal): void
     {
         $this->uidLocal = $uidLocal ;
     }
@@ -84,7 +84,7 @@ class FileReference extends \TYPO3\CMS\Extbase\Domain\Model\FileReference {
     /**
      * @return int
      */
-    public function getUidLocal()
+    public function getUidLocal():?int
     {
         return $this->uidLocal;
     }
