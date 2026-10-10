@@ -35,7 +35,7 @@ final class JVEJvMediaConnectorCTypeMigration extends AbstractListTypeToCTypeUpd
     protected function getListTypeToCTypeMapping(): array
     {
         return [
-            'jvmediaconnector_connector' => 'jvmediaconnector_connector'  
+            'jvmediaconnector_connector' => 'jvmediaconnector_connector'
         ];
     }
 }
