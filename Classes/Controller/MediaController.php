@@ -74,7 +74,7 @@ class MediaController extends ActionController
                                 private readonly \TYPO3\CMS\Core\Resource\ResourceFactory        $resourceFactory,
                                 protected readonly \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder $uriBuilder,
                                 \TYPO3\CMS\Extbase\Service\CacheService                          $cacheService,
-                                \JVE\JvMediaConnector\Domain\Repository\MediaRepository          $mediaRepository, 
+                                \JVE\JvMediaConnector\Domain\Repository\MediaRepository          $mediaRepository,
                                 \TYPO3\CMS\Core\Session\Backend\DatabaseSessionBackend           $sessionRepository)
     {
         $this->persistenceManager = $persistenceManager;
@@ -243,7 +243,7 @@ class MediaController extends ActionController
                 $affectedRows = $queryBuilder
                     ->select("uid", "uid_local" , "uid_foreign")
                     ->from('sys_file_reference')->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($media->getSysfile()->getUid() )))->executeQuery();
-                $mediaRow = $affectedRows->fetch();
+                $mediaRow = $affectedRows->fetchAssociative();
 
                 // ****************** 2. get the sys_file record   ********************
                 if( is_array($mediaRow) && array_key_exists("uid_local" , $mediaRow )) {
@@ -257,7 +257,7 @@ class MediaController extends ActionController
                     $fileQuery = $queryBuilderFile
                         ->select("*" )
                         ->from('sys_file')->where($queryBuilderFile->expr()->eq('uid', $queryBuilderFile->createNamedParameter( $fileUid  )))->executeQuery();
-                    $fileRow = $fileQuery->fetch();
+                    $fileRow = $fileQuery->fetchAssociative();
 
                     // ****************** 3. Delete File from  sys_file record   ********************
                     // works aktually only with /fileadmin/ folder => storage == 1
@@ -712,7 +712,7 @@ class MediaController extends ActionController
                 ->select( "uid","uid_local" )
                 ->from('sys_file_reference')->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter( $media )))->executeQuery();
 
-            $mediaRow = $affectedRows->fetch() ;
+            $mediaRow = $affectedRows->fetchAssociative() ;
 
             if ( $sessionData['maxRelations'] < 2 ) {
                 // remove existing Relations to this media  UID Local may change. Igore that relation may not exists
